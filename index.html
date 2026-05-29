@@ -1,0 +1,1363 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Coop Games Tracker</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<style>
+:root {
+    --bg: #f4f6f9;
+    --bg-card: #ffffff;
+    --bg-hover: #f0f4ff;
+    --primary: #001e50;
+    --primary-light: #00437a;
+    --accent: #0066cc;
+    --text: #1a1a1a;
+    --text-dim: #6c757d;
+    --green: #198754;
+    --yellow: #ffc107;
+    --orange: #e65100;
+    --red: #dc3545;
+    --blue: #0d6efd;
+    --border: #dee2e6;
+    --radius: 6px;
+    --shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    line-height: 1.5;
+}
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+.header {
+    background: var(--primary);
+    color: #fff;
+    padding: 0.8rem 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+}
+.header h1 { font-size: 1.2rem; font-weight: 600; letter-spacing: 0.3px; }
+.header h1 i { margin-right: 0.5rem; }
+.header-actions { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+
+.btn {
+    padding: 0.35rem 0.7rem;
+    border: 1px solid rgba(255,255,255,0.25);
+    border-radius: var(--radius);
+    background: rgba(255,255,255,0.1);
+    color: #fff;
+    cursor: pointer;
+    font-size: 0.8rem;
+    transition: all 0.15s;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+.btn:hover { background: rgba(255,255,255,0.2); }
+.btn-primary { background: var(--accent); border-color: var(--accent); }
+.btn-primary:hover { background: #0052a3; }
+.btn-sm {
+    padding: 0.2rem 0.45rem;
+    font-size: 0.75rem;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    border-radius: 4px;
+}
+.btn-sm:hover { background: var(--bg-hover); color: var(--text); border-color: var(--accent); }
+
+.tabs {
+    display: flex;
+    gap: 0;
+    padding: 0 2rem;
+    background: var(--bg-card);
+    overflow-x: auto;
+    border-bottom: 1px solid var(--border);
+    box-shadow: var(--shadow);
+}
+.tab {
+    padding: 0.7rem 1rem;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    font-size: 0.82rem;
+    white-space: nowrap;
+    color: var(--text-dim);
+    transition: all 0.15s;
+    font-weight: 500;
+}
+.tab:hover { color: var(--text); background: var(--bg-hover); }
+.tab.active { color: var(--primary); border-bottom-color: var(--accent); }
+.tab .count {
+    background: var(--bg);
+    border-radius: 10px;
+    padding: 0.1rem 0.45rem;
+    font-size: 0.7rem;
+    margin-left: 0.3rem;
+    color: var(--text-dim);
+    border: 1px solid var(--border);
+}
+
+.filter-bar {
+    padding: 0.7rem 2rem;
+    display: flex;
+    gap: 0.7rem;
+    align-items: center;
+    flex-wrap: wrap;
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border);
+}
+.filter-bar input, .filter-bar select {
+    padding: 0.4rem 0.7rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg);
+    color: var(--text);
+    font-size: 0.82rem;
+}
+.filter-bar input { width: 220px; }
+.filter-bar input:focus, .filter-bar select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 2px rgba(0,102,204,0.15); }
+
+.main { padding: 1.2rem 2rem; }
+.table-card {
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+    overflow: hidden;
+}
+
+.game-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+.game-table th {
+    text-align: left;
+    padding: 0.65rem 0.6rem;
+    background: var(--primary);
+    color: #fff;
+    font-weight: 500;
+    font-size: 0.8rem;
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+    border-bottom: none;
+}
+.game-table th:hover { background: var(--primary-light); }
+.game-table th .sort-arrow { margin-left: 0.25rem; font-size: 0.65rem; opacity: 0.8; }
+.game-table td {
+    padding: 0.55rem 0.6rem;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+}
+.game-table tbody tr:hover td { background: var(--bg-hover); }
+.game-table tbody tr:last-child td { border-bottom: none; }
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.72rem;
+    font-weight: 500;
+    letter-spacing: 0.2px;
+}
+.badge-released { background: #d4edda; color: #155724; }
+.badge-ea { background: #fff3cd; color: #856404; }
+.badge-unreleased { background: #e2e3e5; color: #383d41; }
+.badge-notfound { background: #f5f5f5; color: #999; }
+.badge-played { background: #d4edda; color: #155724; }
+.badge-abandoned { background: #f8d7da; color: #721c24; }
+.badge-obsolete { background: #e2e3e5; color: #383d41; }
+.badge-wait-ea { background: #fff3cd; color: #856404; }
+.badge-candidate { background: #cce5ff; color: #004085; }
+
+.review-bar { display: flex; align-items: center; gap: 0.4rem; }
+.review-bar-inner {
+    width: 50px; height: 5px;
+    background: #e9ecef;
+    border-radius: 3px;
+    overflow: hidden;
+}
+.review-bar-fill { height: 100%; border-radius: 3px; }
+.review-pct { font-size: 0.78rem; font-weight: 600; }
+
+.modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    z-index: 1000;
+    justify-content: center;
+    align-items: flex-start;
+    padding-top: 8vh;
+    overflow-y: auto;
+}
+.modal-overlay.active { display: flex; }
+.modal {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 0;
+    width: 100%;
+    max-width: 480px;
+    margin-bottom: 2rem;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+    overflow: hidden;
+}
+.modal h2 {
+    margin: 0;
+    padding: 1rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    background: var(--primary);
+    color: #fff;
+}
+.modal-body { padding: 1.2rem 1.5rem; }
+.form-group { margin-bottom: 0.8rem; }
+.form-group label { display: block; font-size: 0.78rem; color: var(--text-dim); margin-bottom: 0.25rem; font-weight: 500; }
+.form-group input, .form-group select {
+    width: 100%;
+    padding: 0.5rem 0.6rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg);
+    color: var(--text);
+    font-size: 0.85rem;
+}
+.form-group input:focus, .form-group select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 2px rgba(0,102,204,0.15); }
+.form-group small { display: block; font-size: 0.75rem; color: var(--text-dim); margin-top: 0.25rem; }
+.modal-actions {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: flex-end;
+    padding: 0.8rem 1.5rem;
+    border-top: 1px solid var(--border);
+    background: var(--bg);
+}
+.modal-actions .btn { color: var(--text); border-color: var(--border); background: var(--bg-card); }
+.modal-actions .btn:hover { background: var(--bg-hover); }
+.modal-actions .btn-primary { color: #fff; background: var(--accent); border-color: var(--accent); }
+
+.settings-panel {
+    padding: 1rem 2rem;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-card);
+    display: none;
+}
+.settings-panel.active { display: block; }
+.settings-panel label { font-size: 0.82rem; color: var(--text-dim); font-weight: 500; }
+.settings-panel input {
+    margin-top: 0.3rem;
+    width: 400px;
+    max-width: 100%;
+    padding: 0.4rem 0.6rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    font-size: 0.85rem;
+}
+.settings-row { margin-bottom: 0.8rem; }
+.settings-row small { display: block; font-size: 0.75rem; color: var(--text-dim); margin-top: 0.25rem; }
+
+.stats {
+    display: flex;
+    gap: 1rem;
+    padding: 1rem 2rem;
+    flex-wrap: wrap;
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border);
+}
+.stat {
+    text-align: center;
+    padding: 0.4rem 1rem;
+    border-left: 3px solid var(--accent);
+    background: var(--bg);
+    border-radius: 0 var(--radius) var(--radius) 0;
+}
+.stat-value { font-size: 1.2rem; font-weight: 700; color: var(--primary); }
+.stat-label { font-size: 0.68rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; }
+
+.toast {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    background: var(--primary);
+    color: #fff;
+    padding: 0.7rem 1.2rem;
+    border-radius: var(--radius);
+    font-size: 0.82rem;
+    z-index: 2000;
+    opacity: 0;
+    transition: opacity 0.3s;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+.toast.show { opacity: 1; }
+
+/* Config prompt overlay */
+#configPrompt {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: var(--bg);
+    z-index: 500;
+    justify-content: center;
+    align-items: center;
+}
+#configPrompt.active { display: flex; }
+.config-box {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 2rem;
+    max-width: 440px;
+    width: 100%;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+    text-align: center;
+}
+.config-box i { font-size: 2.5rem; color: var(--primary); margin-bottom: 1rem; }
+.config-box h2 { font-size: 1.1rem; margin-bottom: 0.5rem; }
+.config-box p { font-size: 0.85rem; color: var(--text-dim); margin-bottom: 1.5rem; }
+.config-box .btn { color: #fff; }
+
+@media (max-width: 768px) {
+    .header, .main, .filter-bar, .stats { padding-left: 1rem; padding-right: 1rem; }
+    .tabs { padding: 0 1rem; }
+    .game-table { font-size: 0.78rem; }
+    .filter-bar input { width: 140px; }
+    .topnav { padding: 0 1rem; }
+}
+
+.topnav {
+    display: flex;
+    gap: 0;
+    padding: 0 2rem;
+    background: var(--primary-light);
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+.topnav-item {
+    padding: 0.6rem 1.2rem;
+    cursor: pointer;
+    color: rgba(255,255,255,0.65);
+    font-size: 0.85rem;
+    font-weight: 500;
+    border-bottom: 3px solid transparent;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+.topnav-item:hover { color: #fff; background: rgba(255,255,255,0.05); }
+.topnav-item.active { color: #fff; border-bottom-color: #fff; background: rgba(255,255,255,0.08); }
+</style>
+</head>
+<body>
+
+<!-- Config prompt (shown when no PAT/Gist configured) -->
+<div id="configPrompt" class="active">
+    <div class="config-box">
+        <i class="bi bi-lock"></i>
+        <h2>Konfiguration erforderlich</h2>
+        <p>Bitte Gist-ID und Personal Access Token in den Einstellungen hinterlegen, um fortzufahren.</p>
+        <button class="btn btn-primary" onclick="showSettings()"><i class="bi bi-gear"></i> Einstellungen öffnen</button>
+    </div>
+</div>
+
+<div class="header">
+    <h1><i class="bi bi-controller"></i>Coop Games Tracker</h1>
+    <div class="header-actions">
+        <button class="btn btn-primary" onclick="openAddModal()"><i class="bi bi-plus-circle"></i> Hinzufügen</button>
+        <button class="btn" id="btnSteamRefresh" onclick="refreshAllSteamData()"><i class="bi bi-arrow-clockwise"></i> Steam Refresh</button>
+        <button class="btn" onclick="toggleSettings()"><i class="bi bi-gear"></i></button>
+        <button class="btn" onclick="exportData()"><i class="bi bi-download"></i> Export</button>
+        <button class="btn" onclick="document.getElementById('importFile').click()"><i class="bi bi-upload"></i> Import</button>
+        <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
+    </div>
+</div>
+
+<nav class="topnav" id="topnav">
+    <div class="topnav-item active" onclick="switchView('watchlist')"><i class="bi bi-binoculars"></i> Watchlist</div>
+    <div class="topnav-item" onclick="switchView('weekly')"><i class="bi bi-calendar-week"></i> Coop Weekly</div>
+    <div class="topnav-item" onclick="switchView('weekends')"><i class="bi bi-calendar-event"></i> Coop Weekends</div>
+</nav>
+
+<div class="settings-panel" id="settingsPanel">
+    <div class="settings-row">
+        <label>GitHub Personal Access Token</label>
+        <input type="password" id="settingPat" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx">
+        <small>Token mit <code>gist</code>-Berechtigung. Wird nur lokal im Browser gespeichert.</small>
+    </div>
+    <div class="settings-row">
+        <label>Gist ID</label>
+        <input type="text" id="settingGistId" placeholder="z.B. a1b2c3d4e5f6...">
+        <small>Die ID des privaten Gists (aus der URL: gist.github.com/{user}/{id}).</small>
+    </div>
+    <div class="settings-row">
+        <label>Benutzername (für Änderungs-Tracking)</label>
+        <input type="text" id="settingUserName" placeholder="z.B. Ulf, Falk">
+    </div>
+    <div class="settings-row">
+        <label>Steam API Proxy URL (optional, für Live-Daten)</label>
+        <input type="text" id="settingProxyUrl" placeholder="z.B. https://example.com/steam-proxy">
+        <small>Ohne Proxy können Steam-Daten nicht aktualisiert werden, die App funktioniert aber offline.</small>
+    </div>
+    <div style="margin-top:0.8rem; display:flex; gap:0.5rem; align-items:center;">
+        <button class="btn btn-primary" style="color:#fff" onclick="saveSettings()"><i class="bi bi-check"></i> Speichern & verbinden</button>
+        <span id="syncStatus" style="font-size:0.78rem"></span>
+    </div>
+</div>
+
+<div id="view-watchlist">
+<div class="stats" id="stats"></div>
+<div class="tabs" id="tabs"></div>
+<div class="filter-bar">
+    <input type="text" id="searchInput" placeholder="Suche..." oninput="renderGames()">
+    <select id="statusFilter" onchange="renderGames()">
+        <option value="">Alle Status</option>
+        <option value="candidate">Kandidat</option>
+        <option value="played">Gespielt</option>
+        <option value="abandoned">Abgebrochen</option>
+        <option value="obsolete">Aussortiert</option>
+        <option value="wait-ea">Warte auf EA-Reife</option>
+    </select>
+</div>
+<div class="main">
+    <div class="table-card">
+    <table class="game-table">
+        <thead>
+            <tr>
+                <th onclick="sortByColumn('name')" id="th-name">Spiel <span class="sort-arrow"></span></th>
+                <th onclick="sortByColumn('category')" id="th-category">Kategorie <span class="sort-arrow"></span></th>
+                <th onclick="sortByColumn('steam_status')" id="th-steam_status">Steam Status <span class="sort-arrow"></span></th>
+                <th onclick="sortByColumn('user_status')" id="th-user_status">User Status <span class="sort-arrow"></span></th>
+                <th onclick="sortByColumn('price')" id="th-price">Preis <span class="sort-arrow"></span></th>
+                <th onclick="sortByColumn('review_pct')" id="th-review_pct">Bewertung <span class="sort-arrow"></span></th>
+                <th onclick="sortByColumn('review_count')" id="th-review_count">Reviews <span class="sort-arrow"></span></th>
+                <th>Aktionen</th>
+            </tr>
+        </thead>
+        <tbody id="gameTableBody"></tbody>
+    </table>
+    </div>
+    <p id="emptyMsg" style="text-align:center;padding:2rem;color:var(--text-dim);display:none">
+        Keine Spiele in dieser Ansicht.
+    </p>
+</div>
+</div>
+
+<!-- Weekly View -->
+<div id="view-weekly" style="display:none">
+<div class="stats" id="stats-weekly"></div>
+<div class="filter-bar">
+    <input type="text" id="searchWeekly" placeholder="Suche..." oninput="renderWeekly()">
+</div>
+<div class="main">
+    <div class="table-card">
+    <table class="game-table" id="weeklyTable">
+        <thead>
+            <tr>
+                <th onclick="sortWeeklyBy('date')">Datum <span class="sort-arrow"></span></th>
+                <th onclick="sortWeeklyBy('title')">Titel <span class="sort-arrow"></span></th>
+                <th onclick="sortWeeklyBy('hours')">Stunden <span class="sort-arrow"></span></th>
+                <th onclick="sortWeeklyBy('rating')">Fazit <span class="sort-arrow"></span></th>
+                <th>Bemerkung</th>
+                <th>Aktionen</th>
+            </tr>
+        </thead>
+        <tbody id="weeklyTableBody"></tbody>
+    </table>
+    </div>
+</div>
+</div>
+
+<!-- Weekends View -->
+<div id="view-weekends" style="display:none">
+<div class="stats" id="stats-weekends"></div>
+<div class="filter-bar">
+    <input type="text" id="searchWeekends" placeholder="Suche..." oninput="renderWeekends()">
+</div>
+<div class="main">
+    <div class="table-card">
+    <table class="game-table" id="weekendsTable">
+        <thead>
+            <tr>
+                <th onclick="sortWeekendsBy('date')">Datum <span class="sort-arrow"></span></th>
+                <th onclick="sortWeekendsBy('title')">Titel <span class="sort-arrow"></span></th>
+                <th onclick="sortWeekendsBy('location')">Ort <span class="sort-arrow"></span></th>
+                <th>Sonderaktion</th>
+                <th>Aktionen</th>
+            </tr>
+        </thead>
+        <tbody id="weekendsTableBody"></tbody>
+    </table>
+    </div>
+</div>
+</div>
+
+<!-- Add/Edit Modal -->
+<div class="modal-overlay" id="modal">
+    <div class="modal">
+        <h2 id="modalTitle">Spiel hinzufügen</h2>
+        <div class="modal-body">
+        <div class="form-group">
+            <label>Name *</label>
+            <input type="text" id="formName" placeholder="Spielname">
+        </div>
+        <div class="form-group">
+            <label id="formField2Label">Steam AppID (optional)</label>
+            <input type="text" id="formAppId" placeholder="z.B. 1966720">
+        </div>
+        <div class="form-group" id="formCategoryGroup">
+            <label id="formField3Label">Kategorie</label>
+            <select id="formCategory">
+                <option value="vierer">Vierer-Runde</option>
+                <option value="hauptliste">Hauptliste</option>
+                <option value="neue">Neue Spiele</option>
+                <option value="top10">Top 10</option>
+                <option value="taktik">Taktik / Shooter</option>
+                <option value="replay">Replay</option>
+                <option value="maybe">Maybe</option>
+                <option value="earlyaccess">Early Access / In Entwicklung</option>
+                <option value="aeltere">Ältere Einträge</option>
+            </select>
+            <input type="text" id="formDate" placeholder="z.B. 2026/05" style="display:none">
+        </div>
+        <div class="form-group" id="formStatusGroup">
+            <label>Status</label>
+            <select id="formStatus">
+                <option value="candidate">Kandidat</option>
+                <option value="played">Gespielt</option>
+                <option value="abandoned">Abgebrochen</option>
+                <option value="obsolete">Aussortiert</option>
+                <option value="wait-ea">Warte auf EA-Reife</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Notizen</label>
+            <input type="text" id="formNotes" placeholder="Optionale Notizen...">
+        </div>
+        </div>
+        <div class="modal-actions">
+            <button class="btn" onclick="closeModal()">Abbrechen</button>
+            <button class="btn btn-primary" onclick="saveGame()">Speichern</button>
+        </div>
+    </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ==================== CONFIG KEYS ====================
+const STORAGE_KEY        = 'coop_tracker_watchlist';
+const STORAGE_KEY_WEEKLY = 'coop_tracker_weekly';
+const STORAGE_KEY_WEEKENDS = 'coop_tracker_weekends';
+const PAT_KEY            = 'coop_tracker_pat';
+const GIST_ID_KEY        = 'coop_tracker_gist_id';
+const USER_NAME_KEY      = 'coop_tracker_username';
+const PROXY_KEY          = 'coop_tracker_proxy_url';
+const GIST_FILE          = 'coop_games_data.json';
+
+const CATEGORIES = {
+    vierer:      { label: 'Vierer-Runde',            icon: 'bi-people',          order: 0 },
+    hauptliste:  { label: 'Hauptliste',               icon: 'bi-fire',            order: 1 },
+    neue:        { label: 'Neue Spiele',              icon: 'bi-plus-square',     order: 2 },
+    top10:       { label: 'Top 10',                   icon: 'bi-trophy',          order: 3 },
+    taktik:      { label: 'Taktik / Shooter',         icon: 'bi-crosshair',       order: 4 },
+    replay:      { label: 'Replay',                   icon: 'bi-arrow-repeat',    order: 5 },
+    maybe:       { label: 'Maybe',                    icon: 'bi-question-circle', order: 6 },
+    earlyaccess: { label: 'Early Access',             icon: 'bi-hourglass-split', order: 7 },
+    aeltere:     { label: 'Ältere Einträge',          icon: 'bi-archive',         order: 8 },
+};
+
+const STATUS_LABELS = {
+    candidate: { label: 'Kandidat',       class: 'badge-candidate' },
+    played:    { label: 'Gespielt',        class: 'badge-played'    },
+    abandoned: { label: 'Abgebrochen',    class: 'badge-abandoned' },
+    obsolete:  { label: 'Aussortiert',    class: 'badge-obsolete'  },
+    'wait-ea': { label: 'Warte EA',       class: 'badge-wait-ea'   },
+};
+
+const STEAM_STATUS_LABELS = {
+    released:   { label: 'Released',     class: 'badge-released'   },
+    ea:         { label: 'Early Access', class: 'badge-ea'         },
+    unreleased: { label: 'Unreleased',   class: 'badge-unreleased' },
+    unknown:    { label: 'Unbekannt',    class: 'badge-notfound'   },
+};
+
+let games        = [];
+let weeklyGames  = [];
+let weekendGames = [];
+let activeView   = 'watchlist';
+let activeCategory     = 'all';
+let editingId          = null;
+let currentSortColumn  = 'name';
+let currentSortDir     = 'asc';
+let weeklySortCol      = 'date';
+let weeklySortDir      = 'desc';
+let weekendsSortCol    = 'date';
+let weekendsSortDir    = 'desc';
+
+// ==================== SETTINGS ====================
+function getPat()      { return localStorage.getItem(PAT_KEY) || ''; }
+function getGistId()   { return localStorage.getItem(GIST_ID_KEY) || ''; }
+function getUserName() { return localStorage.getItem(USER_NAME_KEY) || 'anonymous'; }
+function getProxyUrl() { return localStorage.getItem(PROXY_KEY) || ''; }
+function isConfigured() { return !!(getPat() && getGistId()); }
+
+function showSettings() {
+    document.getElementById('settingPat').value      = getPat();
+    document.getElementById('settingGistId').value   = getGistId();
+    document.getElementById('settingUserName').value = getUserName();
+    document.getElementById('settingProxyUrl').value = getProxyUrl();
+    document.getElementById('settingsPanel').classList.add('active');
+}
+
+function toggleSettings() {
+    const panel = document.getElementById('settingsPanel');
+    if (panel.classList.contains('active')) {
+        panel.classList.remove('active');
+    } else {
+        showSettings();
+    }
+}
+
+async function saveSettings() {
+    const pat      = document.getElementById('settingPat').value.trim();
+    const gistId   = document.getElementById('settingGistId').value.trim();
+    const userName = document.getElementById('settingUserName').value.trim();
+    const proxyUrl = document.getElementById('settingProxyUrl').value.trim();
+
+    if (!pat || !gistId) { toast('PAT und Gist-ID sind Pflichtfelder'); return; }
+
+    localStorage.setItem(PAT_KEY, pat);
+    localStorage.setItem(GIST_ID_KEY, gistId);
+    if (userName) localStorage.setItem(USER_NAME_KEY, userName);
+    if (proxyUrl) localStorage.setItem(PROXY_KEY, proxyUrl);
+
+    setSyncStatus('loading', 'Verbinde...');
+    await syncFromGist();
+}
+
+// ==================== GITHUB GIST API ====================
+async function loadFromGist() {
+    const resp = await fetch(`https://api.github.com/gists/${getGistId()}`, {
+        headers: {
+            'Authorization': `token ${getPat()}`,
+            'Accept': 'application/vnd.github.v3+json',
+        },
+    });
+    if (!resp.ok) throw new Error(`GitHub API ${resp.status}: ${resp.statusText}`);
+    const data = await resp.json();
+    const file = data.files[GIST_FILE];
+    if (!file) throw new Error(`Datei "${GIST_FILE}" nicht im Gist gefunden`);
+    return JSON.parse(file.content);
+}
+
+async function saveToGist(payload) {
+    const resp = await fetch(`https://api.github.com/gists/${getGistId()}`, {
+        method: 'PATCH',
+        headers: {
+            'Authorization': `token ${getPat()}`,
+            'Accept': 'application/vnd.github.v3+json',
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            files: { [GIST_FILE]: { content: JSON.stringify(payload, null, 2) } },
+        }),
+    });
+    if (!resp.ok) throw new Error(`GitHub API ${resp.status}: ${resp.statusText}`);
+}
+
+async function syncFromGist() {
+    if (!isConfigured()) { setSyncStatus('offline'); return; }
+    setSyncStatus('loading', 'Lade...');
+    try {
+        const data = await loadFromGist();
+        if (data.watchlist)  { games        = data.watchlist;  localStorage.setItem(STORAGE_KEY, JSON.stringify(games)); }
+        if (data.weekly)     { weeklyGames  = data.weekly;     localStorage.setItem(STORAGE_KEY_WEEKLY, JSON.stringify(weeklyGames)); }
+        if (data.weekends)   { weekendGames = data.weekends;   localStorage.setItem(STORAGE_KEY_WEEKENDS, JSON.stringify(weekendGames)); }
+
+        // Hide config prompt, re-render
+        document.getElementById('configPrompt').classList.remove('active');
+        renderAll();
+        setSyncStatus('synced', data.lastModified, data.lastModifiedBy);
+    } catch (e) {
+        console.error('Gist sync error:', e);
+        setSyncStatus('error', null, null, e.message);
+        // If local data available, use it
+        loadFromLocalStorage();
+        if (games.length > 0) {
+            document.getElementById('configPrompt').classList.remove('active');
+            renderAll();
+        }
+    }
+}
+
+async function syncToGist() {
+    if (!isConfigured()) return;
+    const payload = {
+        lastModified: new Date().toISOString(),
+        lastModifiedBy: getUserName(),
+        watchlist: games,
+        weekly: weeklyGames,
+        weekends: weekendGames,
+    };
+    try {
+        await saveToGist(payload);
+        setSyncStatus('synced', payload.lastModified, payload.lastModifiedBy);
+    } catch (e) {
+        console.error('Gist save error:', e);
+        setSyncStatus('error', null, null, e.message);
+        toast('Fehler beim Speichern: ' + e.message);
+    }
+}
+
+function setSyncStatus(state, lastModified, user, error) {
+    const el = document.getElementById('syncStatus');
+    if (!el) return;
+    switch (state) {
+        case 'synced':
+            const time = lastModified ? new Date(lastModified).toLocaleString('de-DE') : '';
+            el.innerHTML = `<span style="color:var(--green)"><i class="bi bi-cloud-check"></i> Synchronisiert</span>${time ? ` (${time}${user ? ', ' + user : ''})` : ''}`;
+            break;
+        case 'error':
+            el.innerHTML = `<span style="color:var(--red)"><i class="bi bi-cloud-slash"></i> Fehler: ${error || 'Verbindung fehlgeschlagen'}</span>`;
+            break;
+        case 'loading':
+            el.innerHTML = `<span style="color:var(--text-dim)"><i class="bi bi-arrow-clockwise"></i> ${error || 'Synchronisiere...'}</span>`;
+            break;
+        case 'offline':
+            el.innerHTML = `<span style="color:var(--text-dim)"><i class="bi bi-hdd"></i> Nicht konfiguriert</span>`;
+            break;
+    }
+}
+
+// ==================== LOCAL STORAGE ====================
+function loadFromLocalStorage() {
+    try { games        = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); } catch(e) { games = []; }
+    try { weeklyGames  = JSON.parse(localStorage.getItem(STORAGE_KEY_WEEKLY) || '[]'); } catch(e) { weeklyGames = []; }
+    try { weekendGames = JSON.parse(localStorage.getItem(STORAGE_KEY_WEEKENDS) || '[]'); } catch(e) { weekendGames = []; }
+}
+
+function saveLocal() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(games));
+    localStorage.setItem(STORAGE_KEY_WEEKLY, JSON.stringify(weeklyGames));
+    localStorage.setItem(STORAGE_KEY_WEEKENDS, JSON.stringify(weekendGames));
+}
+
+function saveGames()   { saveLocal(); syncToGist(); }
+function saveWeekly()  { localStorage.setItem(STORAGE_KEY_WEEKLY, JSON.stringify(weeklyGames)); syncToGist(); }
+function saveWeekends(){ localStorage.setItem(STORAGE_KEY_WEEKENDS, JSON.stringify(weekendGames)); syncToGist(); }
+
+// ==================== INIT ====================
+function init() {
+    if (!isConfigured()) {
+        // Show config prompt — nothing else loaded
+        document.getElementById('configPrompt').classList.add('active');
+        renderAll(); // renders empty tables
+        return;
+    }
+    // Load local cache immediately for instant display
+    loadFromLocalStorage();
+    if (games.length > 0) {
+        document.getElementById('configPrompt').classList.remove('active');
+        renderAll();
+    }
+    // Then fetch fresh data from Gist
+    syncFromGist();
+}
+
+// ==================== STEAM API ====================
+async function fetchSteamSearch(term) {
+    const proxy = getProxyUrl();
+    if (!proxy) throw new Error('Kein Proxy konfiguriert');
+    const resp = await fetch(`${proxy}?action=search&term=${encodeURIComponent(term)}`);
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    return resp.json();
+}
+
+async function fetchSteamDetails(appid) {
+    const proxy = getProxyUrl();
+    if (!proxy) throw new Error('Kein Proxy konfiguriert');
+    const resp = await fetch(`${proxy}?action=details&appid=${appid}`);
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    return resp.json();
+}
+
+async function fetchSteamReviews(appid) {
+    const proxy = getProxyUrl();
+    if (!proxy) throw new Error('Kein Proxy konfiguriert');
+    const resp = await fetch(`${proxy}?action=reviews&appid=${appid}`);
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    return resp.json();
+}
+
+async function refreshSingleGame(game) {
+    if (!game.appid) {
+        const searchData = await fetchSteamSearch(game.name);
+        const items = searchData?.items || [];
+        if (items.length > 0) game.appid = items[0].id;
+        else return;
+    }
+    const detailsData = await fetchSteamDetails(game.appid);
+    const entry = detailsData?.[String(game.appid)];
+    if (entry?.success && entry.data) {
+        const d = entry.data;
+        const genres = d.genres || [];
+        const isEa = genres.some(g => g.description === 'Early Access');
+        const isReleased = !d.release_date?.coming_soon;
+        let price = '';
+        if (d.price_overview) price = d.price_overview.final_formatted || '';
+        else if (d.is_free) price = 'Free to Play';
+        let steamStatus = 'unknown';
+        if (!isReleased) steamStatus = 'unreleased';
+        else if (isEa) steamStatus = 'ea';
+        else steamStatus = 'released';
+        game.steam = game.steam || {};
+        Object.assign(game.steam, { price, steam_status: steamStatus, is_ea: isEa, release_date: d.release_date?.date || '' });
+    }
+    const reviewsData = await fetchSteamReviews(game.appid);
+    if (reviewsData?.success === 1 && reviewsData.query_summary) {
+        const qs = reviewsData.query_summary;
+        const total = (qs.total_positive || 0) + (qs.total_negative || 0);
+        game.steam = game.steam || {};
+        game.steam.review_count = total;
+        game.steam.review_pct = total > 0 ? Math.round(qs.total_positive / total * 100) : null;
+    }
+    game.steam.last_updated = new Date().toISOString();
+}
+
+async function refreshAllSteamData() {
+    if (!getProxyUrl()) { toast('Bitte erst Steam Proxy URL in den Einstellungen eintragen'); return; }
+    const candidates = games.filter(g => g.status !== 'obsolete');
+    toast(`Aktualisiere ${candidates.length} Spiele...`);
+    let updated = 0;
+    for (const game of candidates) {
+        try { await refreshSingleGame(game); updated++; }
+        catch (e) { console.warn(`Fehler bei ${game.name}:`, e); }
+        await new Promise(r => setTimeout(r, 1200));
+    }
+    saveGames(); renderGames(); renderStats();
+    toast(`${updated}/${candidates.length} Spiele aktualisiert`);
+}
+
+async function refreshOneGame(id) {
+    if (!getProxyUrl()) { toast('Bitte erst Steam Proxy URL in den Einstellungen eintragen'); return; }
+    const game = games.find(g => g.id === id);
+    if (!game) return;
+    toast(`Aktualisiere ${game.name}...`);
+    try {
+        await refreshSingleGame(game);
+        saveGames(); renderGames();
+        toast(`${game.name} aktualisiert`);
+    } catch(e) { toast(`Fehler: ${e.message}`); }
+}
+
+// ==================== UI ====================
+function renderAll() {
+    renderTabs(); renderGames(); renderStats();
+    if (activeView === 'weekly')   { renderWeekly(); renderWeeklyStats(); }
+    if (activeView === 'weekends') { renderWeekends(); renderWeekendsStats(); }
+}
+
+function renderTabs() {
+    const tabsEl = document.getElementById('tabs');
+    let html = `<div class="tab ${activeCategory === 'all' ? 'active' : ''}" onclick="setCategory('all')">Alle <span class="count">${games.length}</span></div>`;
+    for (const [key, cat] of Object.entries(CATEGORIES)) {
+        const count = games.filter(g => g.category === key).length;
+        if (count === 0) continue;
+        html += `<div class="tab ${activeCategory === key ? 'active' : ''}" onclick="setCategory('${key}')"><i class="${cat.icon}"></i> ${cat.label} <span class="count">${count}</span></div>`;
+    }
+    tabsEl.innerHTML = html;
+}
+
+function setCategory(cat) { activeCategory = cat; renderTabs(); renderGames(); }
+
+function renderStats() {
+    const total = games.length;
+    const candidates = games.filter(g => g.status === 'candidate').length;
+    const played = games.filter(g => g.status === 'played').length;
+    const withReviews = games.filter(g => g.steam?.review_pct != null);
+    const avgReview = withReviews.length > 0
+        ? Math.round(withReviews.reduce((s, g) => s + g.steam.review_pct, 0) / withReviews.length) : 0;
+    const released = games.filter(g => g.steam?.steam_status === 'released').length;
+    document.getElementById('stats').innerHTML = `
+        <div class="stat"><div class="stat-value">${total}</div><div class="stat-label">Gesamt</div></div>
+        <div class="stat"><div class="stat-value">${candidates}</div><div class="stat-label">Kandidaten</div></div>
+        <div class="stat"><div class="stat-value">${released}</div><div class="stat-label">Released</div></div>
+        <div class="stat"><div class="stat-value">${played}</div><div class="stat-label">Gespielt</div></div>
+        <div class="stat"><div class="stat-value">${avgReview}%</div><div class="stat-label">&#216; Bewertung</div></div>
+    `;
+}
+
+function renderGames() {
+    const search = document.getElementById('searchInput').value.toLowerCase();
+    const statusFilter = document.getElementById('statusFilter').value;
+    let filtered = games.filter(g => {
+        if (activeCategory !== 'all' && g.category !== activeCategory) return false;
+        if (statusFilter && g.status !== statusFilter) return false;
+        if (search && !g.name.toLowerCase().includes(search) && !(g.notes||'').toLowerCase().includes(search)) return false;
+        return true;
+    });
+    const dir = currentSortDir === 'asc' ? 1 : -1;
+    filtered.sort((a, b) => {
+        switch (currentSortColumn) {
+            case 'review_pct':   return dir * ((a.steam?.review_pct ?? -1) - (b.steam?.review_pct ?? -1));
+            case 'review_count': return dir * ((a.steam?.review_count || 0) - (b.steam?.review_count || 0));
+            case 'price':        return dir * (parsePrice(a.steam?.price) - parsePrice(b.steam?.price));
+            case 'category':     return dir * ((CATEGORIES[a.category]?.order ?? 99) - (CATEGORIES[b.category]?.order ?? 99));
+            case 'steam_status': {
+                const o = {released:0,ea:1,unreleased:2,unknown:3};
+                return dir * ((o[a.steam?.steam_status]??9) - (o[b.steam?.steam_status]??9));
+            }
+            case 'user_status': {
+                const o = {candidate:0,played:1,'wait-ea':2,abandoned:3,obsolete:4};
+                return dir * ((o[a.status]??9) - (o[b.status]??9));
+            }
+            default: return dir * a.name.localeCompare(b.name);
+        }
+    });
+    const tbody    = document.getElementById('gameTableBody');
+    const emptyMsg = document.getElementById('emptyMsg');
+    if (filtered.length === 0) { tbody.innerHTML = ''; emptyMsg.style.display = 'block'; return; }
+    emptyMsg.style.display = 'none';
+    tbody.innerHTML = filtered.map(game => {
+        const steam          = game.steam || {};
+        const catInfo        = CATEGORIES[game.category];
+        const catLabel       = catInfo ? `<i class="${catInfo.icon}"></i> ${catInfo.label}` : game.category;
+        const statusInfo     = STATUS_LABELS[game.status] || STATUS_LABELS.candidate;
+        const steamStatusInfo = STEAM_STATUS_LABELS[steam.steam_status] || STEAM_STATUS_LABELS.unknown;
+        let reviewHtml = '—';
+        if (steam.review_pct != null) {
+            const color = getReviewColor(steam.review_pct);
+            reviewHtml = `<div class="review-bar">
+                <span class="review-pct" style="color:${color}">${steam.review_pct}%</span>
+                <div class="review-bar-inner"><div class="review-bar-fill" style="width:${steam.review_pct}%;background:${color}"></div></div>
+            </div>`;
+        }
+        const countHtml  = steam.review_count > 0 ? formatCount(steam.review_count) : '—';
+        const steamLink  = game.appid
+            ? `<a href="https://store.steampowered.com/app/${game.appid}" target="_blank">${escHtml(game.name)}</a>`
+            : escHtml(game.name);
+        const notesHtml  = game.notes ? `<br><small style="color:var(--text-dim)">${escHtml(game.notes)}</small>` : '';
+        return `<tr>
+            <td>${steamLink}${notesHtml}</td>
+            <td><small>${catLabel}</small></td>
+            <td><span class="badge ${steamStatusInfo.class}">${steamStatusInfo.label}</span></td>
+            <td><span class="badge ${statusInfo.class}">${statusInfo.label}</span></td>
+            <td>${steam.price || '—'}</td>
+            <td>${reviewHtml}</td>
+            <td>${countHtml}</td>
+            <td>
+                <button class="btn btn-sm" onclick="openEditModal('${game.id}')" title="Bearbeiten"><i class="bi bi-pencil"></i></button>
+                <button class="btn btn-sm" onclick="refreshOneGame('${game.id}')" title="Steam aktualisieren"><i class="bi bi-arrow-clockwise"></i></button>
+                <button class="btn btn-sm" onclick="deleteGame('${game.id}')" title="Löschen"><i class="bi bi-trash3"></i></button>
+            </td>
+        </tr>`;
+    }).join('');
+}
+
+function getReviewColor(pct) {
+    if (pct >= 90) return '#198754';
+    if (pct >= 80) return '#4caf50';
+    if (pct >= 70) return '#e65100';
+    if (pct >= 60) return '#ff9800';
+    return '#dc3545';
+}
+
+function parsePrice(s) {
+    if (!s) return 9999;
+    if (s === 'Free to Play') return 0;
+    const m = s.replace(',','.').match(/[\d.]+/);
+    return m ? parseFloat(m[0]) : 9999;
+}
+
+function formatCount(n) {
+    if (n >= 1000000) return (n/1000000).toFixed(1)+'M';
+    if (n >= 1000)    return (n/1000).toFixed(1)+'k';
+    return String(n);
+}
+
+function escHtml(str) {
+    const d = document.createElement('div');
+    d.textContent = str;
+    return d.innerHTML;
+}
+
+function sortByColumn(col) {
+    if (currentSortColumn === col) currentSortDir = currentSortDir === 'asc' ? 'desc' : 'asc';
+    else { currentSortColumn = col; currentSortDir = (col === 'review_pct' || col === 'review_count') ? 'desc' : 'asc'; }
+    updateSortArrows();
+    renderGames();
+}
+
+function updateSortArrows() {
+    document.querySelectorAll('.game-table th .sort-arrow').forEach(el => el.textContent = '');
+    const th = document.getElementById('th-' + currentSortColumn);
+    if (th) { const a = th.querySelector('.sort-arrow'); if (a) a.textContent = currentSortDir === 'asc' ? ' ▲' : ' ▼'; }
+}
+
+// ==================== MODAL ====================
+function openAddModal() {
+    editingId = null;
+    const modal = document.getElementById('modal');
+    modal.dataset.mode = activeView;
+    document.querySelectorAll('.modal-body .form-group').forEach(el => el.style.display = '');
+    if (activeView === 'weekly') {
+        document.getElementById('modalTitle').textContent = 'Weekly Eintrag hinzufügen';
+        document.getElementById('formField2Label').textContent = 'Stunden (optional)';
+        document.getElementById('formField3Label').textContent = 'Datum *';
+        document.getElementById('formStatusGroup').style.display = 'none';
+        document.getElementById('formCategory').style.display = 'none';
+        document.getElementById('formDate').style.display = '';
+        document.getElementById('formDate').value = new Date().toISOString().slice(0,7).replace('-','/');
+        document.getElementById('formName').value = '';
+        document.getElementById('formAppId').value = '';
+        document.getElementById('formNotes').value = '';
+    } else if (activeView === 'weekends') {
+        document.getElementById('modalTitle').textContent = 'Weekend Eintrag hinzufügen';
+        document.getElementById('formField2Label').textContent = 'Ort (z.B. Ulf, Falk)';
+        document.getElementById('formField3Label').textContent = 'Datum (z.B. 07.05.–10.05.2026)';
+        document.getElementById('formStatusGroup').style.display = 'none';
+        document.getElementById('formCategory').style.display = 'none';
+        document.getElementById('formDate').style.display = '';
+        document.getElementById('formDate').value = '';
+        document.getElementById('formName').value = '';
+        document.getElementById('formAppId').value = '';
+        document.getElementById('formNotes').value = '';
+    } else {
+        document.getElementById('modalTitle').textContent = 'Spiel hinzufügen';
+        document.getElementById('formField2Label').textContent = 'Steam AppID (optional)';
+        document.getElementById('formField3Label').textContent = 'Kategorie';
+        document.getElementById('formCategory').style.display = '';
+        document.getElementById('formDate').style.display = 'none';
+        document.getElementById('formCategory').value = 'hauptliste';
+        document.getElementById('formStatus').value = 'candidate';
+        document.getElementById('formName').value = '';
+        document.getElementById('formAppId').value = '';
+        document.getElementById('formNotes').value = '';
+    }
+    modal.classList.add('active');
+}
+
+function openEditModal(id) {
+    const game = games.find(g => g.id === id);
+    if (!game) return;
+    editingId = id;
+    const modal = document.getElementById('modal');
+    modal.dataset.mode = 'watchlist';
+    document.querySelectorAll('.modal-body .form-group').forEach(el => el.style.display = '');
+    document.getElementById('modalTitle').textContent = 'Spiel bearbeiten';
+    document.getElementById('formField2Label').textContent = 'Steam AppID (optional)';
+    document.getElementById('formField3Label').textContent = 'Kategorie';
+    document.getElementById('formCategory').style.display = '';
+    document.getElementById('formDate').style.display = 'none';
+    document.getElementById('formName').value = game.name;
+    document.getElementById('formAppId').value = game.appid || '';
+    document.getElementById('formCategory').value = game.category;
+    document.getElementById('formStatus').value = game.status;
+    document.getElementById('formNotes').value = game.notes || '';
+    modal.classList.add('active');
+}
+
+function closeModal() {
+    document.getElementById('modal').classList.remove('active');
+    document.getElementById('modal').dataset.mode = '';
+    editingId = null;
+    document.querySelectorAll('.modal-body .form-group').forEach(el => el.style.display = '');
+    document.getElementById('formCategory').style.display = '';
+    document.getElementById('formDate').style.display = 'none';
+}
+
+function saveGame() {
+    const modal = document.getElementById('modal');
+    const mode  = modal.dataset.mode || 'watchlist';
+    const name  = document.getElementById('formName').value.trim();
+    if (!name) { toast('Name ist Pflichtfeld'); return; }
+
+    if (mode === 'weekly') {
+        const hours = parseFloat(document.getElementById('formAppId').value) || null;
+        const notes = document.getElementById('formNotes').value.trim();
+        const date  = document.getElementById('formDate').value.trim() || new Date().toISOString().slice(0,7).replace('-','/');
+        if (editingId) {
+            const w = weeklyGames.find(g => g.id === editingId);
+            if (w) { w.title = name; w.hours = hours; w.notes = notes; w.date = date; }
+        } else {
+            weeklyGames.push({ id: crypto.randomUUID(), date, title: name, hours, notes });
+        }
+        saveWeekly(); closeModal(); renderWeekly(); renderWeeklyStats();
+        toast(editingId ? 'Eintrag aktualisiert' : 'Eintrag hinzugefügt');
+        return;
+    }
+
+    if (mode === 'weekends') {
+        const location = document.getElementById('formAppId').value.trim();
+        const special  = document.getElementById('formNotes').value.trim();
+        const dateLabel = document.getElementById('formDate').value.trim();
+        const yearMatch = dateLabel.match(/(\d{4})/);
+        const monthMatch = dateLabel.match(/(\d{2})\.(\d{2})\./);
+        const date = yearMatch ? `${yearMatch[1]}/${monthMatch ? monthMatch[2] : '01'}` : new Date().toISOString().slice(0,7).replace('-','/');
+        if (editingId) {
+            const w = weekendGames.find(g => g.id === editingId);
+            if (w) { w.title = name; w.location = location; w.special = special; w.dateLabel = dateLabel; w.date = date; }
+        } else {
+            weekendGames.push({ id: crypto.randomUUID(), date, dateLabel, title: name, location, special });
+        }
+        saveWeekends(); closeModal(); renderWeekends(); renderWeekendsStats();
+        toast(editingId ? 'Eintrag aktualisiert' : 'Eintrag hinzugefügt');
+        return;
+    }
+
+    const appid    = parseInt(document.getElementById('formAppId').value) || null;
+    const category = document.getElementById('formCategory').value;
+    const status   = document.getElementById('formStatus').value;
+    const notes    = document.getElementById('formNotes').value.trim();
+    if (editingId) {
+        const game = games.find(g => g.id === editingId);
+        if (game) { game.name = name; game.appid = appid; game.category = category; game.status = status; game.notes = notes; }
+    } else {
+        games.push({ id: crypto.randomUUID(), name, appid, category, status, notes,
+            added: new Date().toISOString(),
+            steam: { price: '', review_pct: null, review_count: 0, steam_status: 'unknown', release_date: '', is_ea: false }
+        });
+    }
+    saveGames(); closeModal(); renderTabs(); renderGames(); renderStats();
+    toast(editingId ? 'Spiel aktualisiert' : 'Spiel hinzugefügt');
+}
+
+function deleteGame(id) {
+    const game = games.find(g => g.id === id);
+    if (!game || !confirm(`"${game.name}" wirklich löschen?`)) return;
+    games = games.filter(g => g.id !== id);
+    saveGames(); renderTabs(); renderGames(); renderStats();
+    toast('Spiel gelöscht');
+}
+
+// ==================== IMPORT / EXPORT ====================
+function exportData() {
+    const data = JSON.stringify({ watchlist: games, weekly: weeklyGames, weekends: weekendGames }, null, 2);
+    const blob = new Blob([data], { type: 'application/json' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href = url; a.download = `coop_games_backup_${new Date().toISOString().slice(0,10)}.json`; a.click();
+    URL.revokeObjectURL(url);
+    toast('Export gespeichert');
+}
+
+function importData(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        try {
+            const imported = JSON.parse(e.target.result);
+            if (Array.isArray(imported)) {
+                games = imported; saveGames();
+            } else if (imported.watchlist) {
+                games = imported.watchlist; saveGames();
+                if (imported.weekly)   { weeklyGames  = imported.weekly;   saveWeekly(); }
+                if (imported.weekends) { weekendGames = imported.weekends; saveWeekends(); }
+            } else { throw new Error('Ungültiges Format'); }
+            renderAll();
+            toast('Import erfolgreich');
+        } catch(err) { toast('Import fehlgeschlagen: ' + err.message); }
+    };
+    reader.readAsText(file);
+    event.target.value = '';
+}
+
+// ==================== TOAST ====================
+function toast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ==================== VIEW SWITCHING ====================
+function switchView(view) {
+    activeView = view;
+    document.querySelectorAll('.topnav-item').forEach((el, i) => {
+        el.classList.toggle('active', ['watchlist','weekly','weekends'][i] === view);
+    });
+    document.getElementById('view-watchlist').style.display = view === 'watchlist' ? '' : 'none';
+    document.getElementById('view-weekly').style.display    = view === 'weekly'    ? '' : 'none';
+    document.getElementById('view-weekends').style.display  = view === 'weekends'  ? '' : 'none';
+    document.getElementById('btnSteamRefresh').style.display = view === 'watchlist' ? '' : 'none';
+    if (view === 'weekly')   { renderWeekly(); renderWeeklyStats(); }
+    if (view === 'weekends') { renderWeekends(); renderWeekendsStats(); }
+}
+
+// ==================== WEEKLY ====================
+function renderWeeklyStats() {
+    const total = weeklyGames.length;
+    const totalHours = weeklyGames.reduce((s, g) => s + (g.hours || 0), 0);
+    const withHours  = weeklyGames.filter(g => g.hours).length;
+    const avgHours   = withHours > 0 ? Math.round(totalHours / withHours) : 0;
+    const years = new Set(weeklyGames.map(g => g.date?.split('/')[0])).size;
+    document.getElementById('stats-weekly').innerHTML = `
+        <div class="stat"><div class="stat-value">${total}</div><div class="stat-label">Spiele</div></div>
+        <div class="stat"><div class="stat-value">${Math.round(totalHours)}</div><div class="stat-label">Stunden gesamt</div></div>
+        <div class="stat"><div class="stat-value">${avgHours}</div><div class="stat-label">&#216; Stunden</div></div>
+        <div class="stat"><div class="stat-value">${years}</div><div class="stat-label">Jahre aktiv</div></div>
+    `;
+}
+
+function renderWeekly() {
+    const search = document.getElementById('searchWeekly').value.toLowerCase();
+    let filtered = weeklyGames.filter(g =>
+        !search || g.title.toLowerCase().includes(search) || (g.notes||'').toLowerCase().includes(search)
+    );
+    const dir = weeklySortDir === 'asc' ? 1 : -1;
+    filtered.sort((a, b) => {
+        if (weeklySortCol === 'hours') return dir * ((a.hours||0) - (b.hours||0));
+        if (weeklySortCol === 'title') return dir * a.title.localeCompare(b.title);
+        return dir * (a.date||'').localeCompare(b.date||'');
+    });
+    document.getElementById('weeklyTableBody').innerHTML = filtered.map(g => `<tr>
+        <td>${escHtml(g.date||'')}</td>
+        <td><strong>${escHtml(g.title)}</strong></td>
+        <td>${g.hours ? g.hours+'h' : '—'}</td>
+        <td>${getRatingBadge(g.notes)}</td>
+        <td><small style="color:var(--text-dim)">${escHtml(g.notes||'')}</small></td>
+        <td>
+            <button class="btn btn-sm" onclick="editWeekly('${g.id}')"><i class="bi bi-pencil"></i></button>
+            <button class="btn btn-sm" onclick="deleteWeekly('${g.id}')"><i class="bi bi-trash3"></i></button>
+        </td>
+    </tr>`).join('');
+}
+
+function getRatingBadge(notes) {
+    if (!notes) return '';
+    const n = notes.toLowerCase();
+    if (n.includes('mega') || n.includes('krass') || n.includes('super') || n.includes('game of the year')) return '<span class="badge badge-played">Top</span>';
+    if (n.includes('war nix') || n.includes('mies') || n.includes('abgebrochen') || n.includes('langweilig')) return '<span class="badge badge-abandoned">Flop</span>';
+    if (n.includes('ganz okay') || n.includes('ganz nett') || n.includes('ging so') || n.includes('nett')) return '<span class="badge badge-wait-ea">OK</span>';
+    return '';
+}
+
+function sortWeeklyBy(col) {
+    if (weeklySortCol === col) weeklySortDir = weeklySortDir === 'asc' ? 'desc' : 'asc';
+    else { weeklySortCol = col; weeklySortDir = col === 'date' ? 'desc' : 'asc'; }
+    renderWeekly();
+}
+
+function editWeekly(id) {
+    const g = weeklyGames.find(g => g.id === id);
+    if (!g) return;
+    editingId = id;
+    document.querySelectorAll('.modal-body .form-group').forEach(el => el.style.display = '');
+    document.getElementById('modalTitle').textContent = 'Weekly Eintrag bearbeiten';
+    document.getElementById('formField2Label').textContent = 'Stunden';
+    document.getElementById('formField3Label').textContent = 'Datum *';
+    document.getElementById('formStatusGroup').style.display = 'none';
+    document.getElementById('formCategory').style.display = 'none';
+    document.getElementById('formDate').style.display = '';
+    document.getElementById('formName').value  = g.title;
+    document.getElementById('formAppId').value = g.hours || '';
+    document.getElementById('formNotes').value = g.notes || '';
+    document.getElementById('formDate').value  = g.date || '';
+    document.getElementById('modal').dataset.mode = 'weekly';
+    document.getElementById('modal').classList.add('active');
+}
+
+function deleteWeekly(id) {
+    const g = weeklyGames.find(g => g.id === id);
+    if (!g || !confirm(`"${g.title}" wirklich löschen?`)) return;
+    weeklyGames = weeklyGames.filter(g => g.id !== id);
+    saveWeekly(); renderWeekly(); renderWeeklyStats();
+    toast('Eintrag gelöscht');
+}
+
+// ==================== WEEKENDS ====================
+function renderWeekendsStats() {
+    const total  = weekendGames.filter(g => !g.title.includes('Ausfall')).length;
+    const years  = new Set(weekendGames.map(g => g.date?.split('/')[0])).size;
+    const atFirst  = weekendGames.filter(g => g.location === weekendGames.find(x=>x.location)?.location).length;
+    const locations = [...new Set(weekendGames.map(g => g.location).filter(Boolean))];
+    const statsHtml = `
+        <div class="stat"><div class="stat-value">${total}</div><div class="stat-label">Weekends</div></div>
+        <div class="stat"><div class="stat-value">${years}</div><div class="stat-label">Jahre</div></div>
+        ${locations.map(loc => `<div class="stat"><div class="stat-value">${weekendGames.filter(g=>g.location===loc).length}</div><div class="stat-label">bei ${escHtml(loc)}</div></div>`).join('')}
+    `;
+    document.getElementById('stats-weekends').innerHTML = statsHtml;
+}
+
+function renderWeekends() {
+    const search = document.getElementById('searchWeekends').value.toLowerCase();
+    let filtered = weekendGames.filter(g =>
+        !search || g.title.toLowerCase().includes(search) || (g.special||'').toLowerCase().includes(search)
+    );
+    const dir = weekendsSortDir === 'asc' ? 1 : -1;
+    filtered.sort((a, b) => {
+        if (weekendsSortCol === 'title')    return dir * a.title.localeCompare(b.title);
+        if (weekendsSortCol === 'location') return dir * (a.location||'').localeCompare(b.location||'');
+        return dir * (a.date||'').localeCompare(b.date||'');
+    });
+    document.getElementById('weekendsTableBody').innerHTML = filtered.map(g => `<tr>
+        <td>${escHtml(g.dateLabel || g.date || '')}</td>
+        <td><strong>${escHtml(g.title)}</strong></td>
+        <td><i class="bi bi-house"></i> ${escHtml(g.location||'')}</td>
+        <td><small style="color:var(--text-dim)">${escHtml(g.special||'')}</small></td>
+        <td>
+            <button class="btn btn-sm" onclick="editWeekend('${g.id}')"><i class="bi bi-pencil"></i></button>
+            <button class="btn btn-sm" onclick="deleteWeekend('${g.id}')"><i class="bi bi-trash3"></i></button>
+        </td>
+    </tr>`).join('');
+}
+
+function sortWeekendsBy(col) {
+    if (weekendsSortCol === col) weekendsSortDir = weekendsSortDir === 'asc' ? 'desc' : 'asc';
+    else { weekendsSortCol = col; weekendsSortDir = col === 'date' ? 'desc' : 'asc'; }
+    renderWeekends();
+}
+
+function editWeekend(id) {
+    const g = weekendGames.find(g => g.id === id);
+    if (!g) return;
+    editingId = id;
+    document.querySelectorAll('.modal-body .form-group').forEach(el => el.style.display = '');
+    document.getElementById('modalTitle').textContent = 'Weekend Eintrag bearbeiten';
+    document.getElementById('formField2Label').textContent = 'Ort (z.B. Ulf, Falk)';
+    document.getElementById('formField3Label').textContent = 'Datum (z.B. 07.05.–10.05.2026)';
+    document.getElementById('formStatusGroup').style.display = 'none';
+    document.getElementById('formCategory').style.display = 'none';
+    document.getElementById('formDate').style.display = '';
+    document.getElementById('formName').value  = g.title;
+    document.getElementById('formAppId').value = g.location || '';
+    document.getElementById('formNotes').value = g.special || '';
+    document.getElementById('formDate').value  = g.dateLabel || g.date || '';
+    document.getElementById('modal').dataset.mode = 'weekends';
+    document.getElementById('modal').classList.add('active');
+}
+
+function deleteWeekend(id) {
+    const g = weekendGames.find(g => g.id === id);
+    if (!g || !confirm(`"${g.title}" wirklich löschen?`)) return;
+    weekendGames = weekendGames.filter(g => g.id !== id);
+    saveWeekends(); renderWeekends(); renderWeekendsStats();
+    toast('Eintrag gelöscht');
+}
+
+// ==================== KEYBOARD / EVENTS ====================
+document.getElementById('modal').addEventListener('click', e => { if (e.target === e.currentTarget) closeModal(); });
+document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeModal();
+    if (e.key === 'n' && e.ctrlKey) { e.preventDefault(); openAddModal(); }
+});
+
+// ==================== START ====================
+init();
+updateSortArrows();
+</script>
+</body>
+</html>

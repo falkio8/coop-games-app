@@ -355,11 +355,72 @@ a:hover { text-decoration: underline; }
 .config-box .btn { color: #fff; }
 
 @media (max-width: 768px) {
-    .header, .main, .filter-bar, .stats { padding-left: 1rem; padding-right: 1rem; }
+    .header, .main, .stats { padding-left: 1rem; padding-right: 1rem; }
     .tabs { padding: 0 1rem; }
     .game-table { font-size: 0.78rem; }
-    .filter-bar input { width: 140px; }
     .topnav { padding: 0 1rem; }
+    /* header: hide Export/Import labels, keep icons */
+    .header h1 { font-size: 1rem; }
+}
+
+@media (max-width: 540px) {
+    /* Header: tighter */
+    .header { padding: 0.6rem 0.75rem; gap: 0.3rem; }
+    .header h1 { font-size: 0.95rem; }
+    .header-actions { gap: 0.25rem; }
+    .btn { padding: 0.3rem 0.5rem; font-size: 0.75rem; }
+    /* hide Export and Import button text, keep icon — by hiding text nodes via span trick */
+    #btnExportLabel, #btnImportLabel { display: none; }
+    /* Stats: smaller */
+    .stats { gap: 0.5rem; padding: 0.5rem 0.75rem; }
+    .stat { padding: 0.5rem 0.75rem; min-width: 60px; }
+    .stat-value { font-size: 1rem; }
+    /* Tabs: scroll horizontally */
+    .tabs { overflow-x: auto; flex-wrap: nowrap; padding-bottom: 2px; }
+    /* Main padding */
+    .main { padding: 0.6rem 0.5rem; }
+    /* Action buttons: no wrap */
+    .game-table td:last-child { white-space: nowrap; }
+    .btn-sm { padding: 0.2rem 0.35rem; }
+
+    /* Watchlist: keep Spiel, User Status, Aktionen — hide rest */
+    #gameTableBody tr td:nth-child(2),
+    #gameTableBody tr td:nth-child(3),
+    #gameTableBody tr td:nth-child(5),
+    #gameTableBody tr td:nth-child(6),
+    #gameTableBody tr td:nth-child(7),
+    #gameTableBody tr td:nth-child(8) { display: none; }
+    .game-table:has(#gameTableBody) thead tr:first-child th:nth-child(2),
+    .game-table:has(#gameTableBody) thead tr:first-child th:nth-child(3),
+    .game-table:has(#gameTableBody) thead tr:first-child th:nth-child(5),
+    .game-table:has(#gameTableBody) thead tr:first-child th:nth-child(6),
+    .game-table:has(#gameTableBody) thead tr:first-child th:nth-child(7),
+    .game-table:has(#gameTableBody) thead tr:first-child th:nth-child(8) { display: none; }
+    .game-table:has(#gameTableBody) thead tr.filter-row th:nth-child(2),
+    .game-table:has(#gameTableBody) thead tr.filter-row th:nth-child(3),
+    .game-table:has(#gameTableBody) thead tr.filter-row th:nth-child(5),
+    .game-table:has(#gameTableBody) thead tr.filter-row th:nth-child(6),
+    .game-table:has(#gameTableBody) thead tr.filter-row th:nth-child(7),
+    .game-table:has(#gameTableBody) thead tr.filter-row th:nth-child(8) { display: none; }
+
+    /* Weekly: keep Titel, Fazit, Aktionen — hide Datum, Stunden, Bemerkung */
+    #weeklyTableBody tr td:nth-child(1),
+    #weeklyTableBody tr td:nth-child(3),
+    #weeklyTableBody tr td:nth-child(5) { display: none; }
+    .game-table:has(#weeklyTableBody) thead tr:first-child th:nth-child(1),
+    .game-table:has(#weeklyTableBody) thead tr:first-child th:nth-child(3),
+    .game-table:has(#weeklyTableBody) thead tr:first-child th:nth-child(5) { display: none; }
+    .game-table:has(#weeklyTableBody) thead tr.filter-row th:nth-child(1),
+    .game-table:has(#weeklyTableBody) thead tr.filter-row th:nth-child(3),
+    .game-table:has(#weeklyTableBody) thead tr.filter-row th:nth-child(5) { display: none; }
+
+    /* Weekends: keep Datum, Titel, Aktionen — hide Ort, Sonderaktion */
+    #weekendsTableBody tr td:nth-child(3),
+    #weekendsTableBody tr td:nth-child(4) { display: none; }
+    .game-table:has(#weekendsTableBody) thead tr:first-child th:nth-child(3),
+    .game-table:has(#weekendsTableBody) thead tr:first-child th:nth-child(4) { display: none; }
+    .game-table:has(#weekendsTableBody) thead tr.filter-row th:nth-child(3),
+    .game-table:has(#weekendsTableBody) thead tr.filter-row th:nth-child(4) { display: none; }
 }
 
 .topnav {
@@ -404,8 +465,8 @@ a:hover { text-decoration: underline; }
         <button class="btn btn-primary" onclick="openAddModal()"><i class="bi bi-plus-circle"></i> Hinzufügen</button>
         <button class="btn" id="btnSteamRefresh" onclick="refreshAllSteamData()"><i class="bi bi-arrow-clockwise"></i> Steam Refresh</button>
         <button class="btn" onclick="toggleSettings()"><i class="bi bi-gear"></i></button>
-        <button class="btn" onclick="exportData()"><i class="bi bi-download"></i> Export</button>
-        <button class="btn" onclick="document.getElementById('importFile').click()"><i class="bi bi-upload"></i> Import</button>
+        <button class="btn" onclick="exportData()"><i class="bi bi-download"></i><span id="btnExportLabel"> Export</span></button>
+        <button class="btn" onclick="document.getElementById('importFile').click()"><i class="bi bi-upload"></i><span id="btnImportLabel"> Import</span></button>
         <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
     </div>
 </div>

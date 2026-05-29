@@ -163,6 +163,27 @@ a:hover { text-decoration: underline; }
 }
 .game-table tbody tr:hover td { background: var(--bg-hover); }
 .game-table tbody tr:last-child td { border-bottom: none; }
+/* Filter row */
+.game-table thead tr.filter-row th {
+    background: var(--primary-light);
+    padding: 0.25rem 0.4rem;
+    font-weight: normal;
+}
+.game-table thead tr.filter-row input,
+.game-table thead tr.filter-row select {
+    width: 100%;
+    padding: 0.2rem 0.35rem;
+    font-size: 0.75rem;
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 3px;
+    background: rgba(255,255,255,0.1);
+    color: #fff;
+}
+.game-table thead tr.filter-row input::placeholder { color: rgba(255,255,255,0.45); }
+.game-table thead tr.filter-row select option { background: var(--primary); color: #fff; }
+/* Clickable status badge */
+.badge-clickable { cursor: pointer; user-select: none; }
+.badge-clickable:hover { opacity: 0.8; filter: brightness(1.1); }
 
 .badge {
     display: inline-flex;
@@ -377,6 +398,7 @@ a:hover { text-decoration: underline; }
 <div class="header">
     <h1><i class="bi bi-controller"></i>Coop Games Tracker</h1>
     <div class="header-actions">
+        <span id="headerSyncStatus" style="font-size:0.72rem;color:rgba(255,255,255,0.55);align-self:center;margin-right:0.25rem"></span>
         <button class="btn btn-primary" onclick="openAddModal()"><i class="bi bi-plus-circle"></i> Hinzufügen</button>
         <button class="btn" id="btnSteamRefresh" onclick="refreshAllSteamData()"><i class="bi bi-arrow-clockwise"></i> Steam Refresh</button>
         <button class="btn" onclick="toggleSettings()"><i class="bi bi-gear"></i></button>
@@ -421,18 +443,12 @@ a:hover { text-decoration: underline; }
 <div id="view-watchlist">
 <div class="stats" id="stats"></div>
 <div class="tabs" id="tabs"></div>
-<div class="filter-bar">
-    <input type="text" id="searchInput" placeholder="Suche..." oninput="renderGames()">
-    <select id="statusFilter" onchange="renderGames()">
-        <option value="">Alle Status</option>
-        <option value="candidate">Kandidat</option>
-        <option value="played">Gespielt</option>
-        <option value="abandoned">Abgebrochen</option>
-        <option value="obsolete">Aussortiert</option>
-        <option value="wait-ea">Warte auf EA-Reife</option>
-    </select>
-</div>
 <div class="main">
+    <div style="display:flex;justify-content:flex-end;padding:0.4rem 0 0.4rem;gap:0.5rem;align-items:center">
+        <label style="font-size:0.78rem;color:var(--text-dim);display:flex;align-items:center;gap:0.3rem;cursor:pointer">
+            <input type="checkbox" id="toggleAddedCol" onchange="renderGames()"> Hinzugefügt anzeigen
+        </label>
+    </div>
     <div class="table-card">
     <table class="game-table">
         <thead>
@@ -444,7 +460,49 @@ a:hover { text-decoration: underline; }
                 <th onclick="sortByColumn('price')" id="th-price">Preis <span class="sort-arrow"></span></th>
                 <th onclick="sortByColumn('review_pct')" id="th-review_pct">Bewertung <span class="sort-arrow"></span></th>
                 <th onclick="sortByColumn('review_count')" id="th-review_count">Reviews <span class="sort-arrow"></span></th>
+                <th onclick="sortByColumn('added')" id="th-added" class="col-added" style="display:none">Hinzugefügt <span class="sort-arrow"></span></th>
                 <th>Aktionen</th>
+            </tr>
+            <tr class="filter-row">
+                <th><input type="text" id="filterName" placeholder="Suche..." oninput="renderGames()"></th>
+                <th>
+                    <select id="filterCategory" onchange="renderGames()">
+                        <option value="">Alle</option>
+                        <option value="vierer">Vierer-Runde</option>
+                        <option value="hauptliste">Hauptliste</option>
+                        <option value="neue">Neue Spiele</option>
+                        <option value="top10">Top 10</option>
+                        <option value="taktik">Taktik/Shooter</option>
+                        <option value="replay">Replay</option>
+                        <option value="maybe">Maybe</option>
+                        <option value="earlyaccess">Early Access</option>
+                        <option value="aeltere">Ältere Einträge</option>
+                    </select>
+                </th>
+                <th>
+                    <select id="filterSteamStatus" onchange="renderGames()">
+                        <option value="">Alle</option>
+                        <option value="released">Released</option>
+                        <option value="ea">Early Access</option>
+                        <option value="unreleased">Unreleased</option>
+                        <option value="unknown">Unbekannt</option>
+                    </select>
+                </th>
+                <th>
+                    <select id="filterUserStatus" onchange="renderGames()">
+                        <option value="">Alle</option>
+                        <option value="candidate">Kandidat</option>
+                        <option value="played">Gespielt</option>
+                        <option value="wait-ea">Warte EA</option>
+                        <option value="abandoned">Abgebrochen</option>
+                        <option value="obsolete">Aussortiert</option>
+                    </select>
+                </th>
+                <th></th>
+                <th></th>
+                <th></th>
+                <th class="col-added" style="display:none"></th>
+                <th></th>
             </tr>
         </thead>
         <tbody id="gameTableBody"></tbody>
@@ -730,23 +788,34 @@ async function syncToGist() {
 }
 
 function setSyncStatus(state, lastModified, user, error) {
-    const el = document.getElementById('syncStatus');
-    if (!el) return;
+    const el     = document.getElementById('syncStatus');
+    const header = document.getElementById('headerSyncStatus');
+
+    let settingsHtml = '';
+    let headerHtml   = '';
+
     switch (state) {
-        case 'synced':
+        case 'synced': {
             const time = lastModified ? new Date(lastModified).toLocaleString('de-DE') : '';
-            el.innerHTML = `<span style="color:var(--green)"><i class="bi bi-cloud-check"></i> Synchronisiert</span>${time ? ` (${time}${user ? ', ' + user : ''})` : ''}`;
+            settingsHtml = `<span style="color:var(--green)"><i class="bi bi-cloud-check"></i> Synchronisiert</span>${time ? ` (${time}${user ? ', ' + user : ''})` : ''}`;
+            headerHtml   = `<i class="bi bi-cloud-check" style="color:rgba(255,255,255,0.5)"></i> ${time ? time.split(', ')[1] || time : ''}`;
             break;
+        }
         case 'error':
-            el.innerHTML = `<span style="color:var(--red)"><i class="bi bi-cloud-slash"></i> Fehler: ${error || 'Verbindung fehlgeschlagen'}</span>`;
+            settingsHtml = `<span style="color:var(--red)"><i class="bi bi-cloud-slash"></i> Fehler: ${error || 'Verbindung fehlgeschlagen'}</span>`;
+            headerHtml   = `<i class="bi bi-cloud-slash" style="color:rgba(255,100,100,0.8)"></i>`;
             break;
         case 'loading':
-            el.innerHTML = `<span style="color:var(--text-dim)"><i class="bi bi-arrow-clockwise"></i> ${error || 'Synchronisiere...'}</span>`;
+            settingsHtml = `<span style="color:var(--text-dim)"><i class="bi bi-arrow-clockwise"></i> ${error || 'Synchronisiere...'}</span>`;
+            headerHtml   = `<i class="bi bi-arrow-clockwise" style="color:rgba(255,255,255,0.4)"></i>`;
             break;
         case 'offline':
-            el.innerHTML = `<span style="color:var(--text-dim)"><i class="bi bi-hdd"></i> Nicht konfiguriert</span>`;
+            settingsHtml = `<span style="color:var(--text-dim)"><i class="bi bi-hdd"></i> Nicht konfiguriert</span>`;
+            headerHtml   = '';
             break;
     }
+    if (el)     el.innerHTML     = settingsHtml;
+    if (header) header.innerHTML = headerHtml;
 }
 
 // ==================== LOCAL STORAGE ====================
@@ -908,10 +977,19 @@ function renderStats() {
 }
 
 function renderGames() {
-    const search = document.getElementById('searchInput').value.toLowerCase();
-    const statusFilter = document.getElementById('statusFilter').value;
+    const search       = (document.getElementById('filterName')?.value || '').toLowerCase();
+    const catFilter    = document.getElementById('filterCategory')?.value || '';
+    const steamFilter  = document.getElementById('filterSteamStatus')?.value || '';
+    const statusFilter = document.getElementById('filterUserStatus')?.value || '';
+    const showAdded    = document.getElementById('toggleAddedCol')?.checked;
+
+    // Toggle added column visibility
+    document.querySelectorAll('.col-added').forEach(el => el.style.display = showAdded ? '' : 'none');
+
     let filtered = games.filter(g => {
         if (activeCategory !== 'all' && g.category !== activeCategory) return false;
+        if (catFilter    && g.category !== catFilter) return false;
+        if (steamFilter  && (g.steam?.steam_status || 'unknown') !== steamFilter) return false;
         if (statusFilter && g.status !== statusFilter) return false;
         if (search && !g.name.toLowerCase().includes(search) && !(g.notes||'').toLowerCase().includes(search)) return false;
         return true;
@@ -957,14 +1035,17 @@ function renderGames() {
             ? `<a href="https://store.steampowered.com/app/${game.appid}" target="_blank">${escHtml(game.name)}</a>`
             : escHtml(game.name);
         const notesHtml  = game.notes ? `<br><small style="color:var(--text-dim)">${escHtml(game.notes)}</small>` : '';
+        const addedHtml  = game.added ? new Date(game.added).toLocaleDateString('de-DE') : '—';
+        const showAdded  = document.getElementById('toggleAddedCol')?.checked;
         return `<tr>
             <td>${steamLink}${notesHtml}</td>
             <td><small>${catLabel}</small></td>
             <td><span class="badge ${steamStatusInfo.class}">${steamStatusInfo.label}</span></td>
-            <td><span class="badge ${statusInfo.class}">${statusInfo.label}</span></td>
+            <td><span class="badge ${statusInfo.class} badge-clickable" onclick="cycleStatus('${game.id}')" title="Klicken zum Ändern">${statusInfo.label}</span></td>
             <td>${steam.price || '—'}</td>
             <td>${reviewHtml}</td>
             <td>${countHtml}</td>
+            <td class="col-added" style="display:${showAdded ? '' : 'none'};font-size:0.78rem;color:var(--text-dim)">${addedHtml}</td>
             <td>
                 <button class="btn btn-sm" onclick="openEditModal('${game.id}')" title="Bearbeiten"><i class="bi bi-pencil"></i></button>
                 <button class="btn btn-sm" onclick="refreshOneGame('${game.id}')" title="Steam aktualisieren"><i class="bi bi-arrow-clockwise"></i></button>
@@ -972,6 +1053,17 @@ function renderGames() {
             </td>
         </tr>`;
     }).join('');
+}
+
+function cycleStatus(id) {
+    const order = ['candidate', 'played', 'wait-ea', 'abandoned', 'obsolete'];
+    const game  = games.find(g => g.id === id);
+    if (!game) return;
+    game.status = order[(order.indexOf(game.status) + 1) % order.length];
+    saveGames();
+    renderGames();
+    renderStats();
+    toast(`Status: ${STATUS_LABELS[game.status].label}`);
 }
 
 function getReviewColor(pct) {

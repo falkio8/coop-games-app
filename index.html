@@ -619,7 +619,12 @@ function showSettings() {
     document.getElementById('settingGistId').value   = getGistId();
     document.getElementById('settingUserName').value = getUserName();
     document.getElementById('settingProxyUrl').value = getProxyUrl();
-    document.getElementById('settingsPanel').classList.add('active');
+    const panel = document.getElementById('settingsPanel');
+    panel.classList.add('active');
+    // Bring settings above the config prompt overlay
+    panel.style.position = 'relative';
+    panel.style.zIndex   = '600';
+    document.getElementById('configPrompt').classList.remove('active');
 }
 
 function toggleSettings() {
@@ -646,6 +651,10 @@ async function saveSettings() {
 
     setSyncStatus('loading', 'Verbinde...');
     await syncFromGist();
+    // If still not loaded after sync attempt, show config prompt again
+    if (games.length === 0) {
+        document.getElementById('configPrompt').classList.add('active');
+    }
 }
 
 // ==================== GITHUB GIST API ====================

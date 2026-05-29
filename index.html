@@ -446,11 +446,6 @@ a:hover { text-decoration: underline; }
 <div class="stats" id="stats"></div>
 <div class="tabs" id="tabs"></div>
 <div class="main">
-    <div style="display:flex;justify-content:flex-end;padding:0.4rem 0 0.4rem;gap:0.5rem;align-items:center">
-        <label style="font-size:0.78rem;color:var(--text-dim);display:flex;align-items:center;gap:0.3rem;cursor:pointer">
-            <input type="checkbox" id="toggleAddedCol" onchange="renderGames()"> Hinzugefügt anzeigen
-        </label>
-    </div>
     <div class="table-card">
     <table class="game-table">
         <thead>
@@ -462,7 +457,7 @@ a:hover { text-decoration: underline; }
                 <th onclick="sortByColumn('price')" id="th-price">Preis <span class="sort-arrow"></span></th>
                 <th onclick="sortByColumn('review_pct')" id="th-review_pct">Bewertung <span class="sort-arrow"></span></th>
                 <th onclick="sortByColumn('review_count')" id="th-review_count">Reviews <span class="sort-arrow"></span></th>
-                <th onclick="sortByColumn('added')" id="th-added" class="col-added" style="display:none">Hinzugefügt <span class="sort-arrow"></span></th>
+                <th onclick="sortByColumn('added')" id="th-added" class="col-added">Hinzugefügt <span class="sort-arrow"></span></th>
                 <th>Aktionen</th>
             </tr>
             <tr class="filter-row">
@@ -503,7 +498,7 @@ a:hover { text-decoration: underline; }
                 <th></th>
                 <th></th>
                 <th></th>
-                <th class="col-added" style="display:none"></th>
+                <th class="col-added"></th>
                 <th></th>
             </tr>
         </thead>
@@ -999,10 +994,7 @@ function renderGames() {
     const catFilter    = document.getElementById('filterCategory')?.value || '';
     const steamFilter  = document.getElementById('filterSteamStatus')?.value || '';
     const statusFilter = document.getElementById('filterUserStatus')?.value || '';
-    const showAdded    = document.getElementById('toggleAddedCol')?.checked;
-
-    // Toggle added column visibility
-    document.querySelectorAll('.col-added').forEach(el => el.style.display = showAdded ? '' : 'none');
+    const showAdded    = true;
 
     let filtered = games.filter(g => {
         if (activeCategory !== 'all' && g.category !== activeCategory) return false;
@@ -1063,7 +1055,7 @@ function renderGames() {
             <td>${steam.price || '—'}</td>
             <td>${reviewHtml}</td>
             <td>${countHtml}</td>
-            <td class="col-added" style="display:${showAdded ? '' : 'none'};font-size:0.78rem;color:var(--text-dim)">${addedHtml}</td>
+            <td class="col-added" style="font-size:0.78rem;color:var(--text-dim)">${addedHtml}</td>
             <td>
                 <button class="btn btn-sm" onclick="openEditModal('${game.id}')" title="Bearbeiten"><i class="bi bi-pencil"></i></button>
                 <button class="btn btn-sm" onclick="refreshOneGame('${game.id}')" title="Steam aktualisieren"><i class="bi bi-arrow-clockwise"></i></button>

@@ -145,6 +145,8 @@ def fetch_steam_data(appid: int) -> dict:
 # ---------------------------------------------------------------------------
 
 def main():
+    global REQUEST_DELAY
+
     parser = argparse.ArgumentParser(description="Steam-Daten im Coop Games Gist aktualisieren")
     parser.add_argument("--gist-id", default=os.environ.get("GIST_ID"), help="GitHub Gist ID")
     parser.add_argument("--pat",     default=os.environ.get("GITHUB_PAT"), help="GitHub Personal Access Token (gist scope)")
@@ -152,7 +154,6 @@ def main():
     parser.add_argument("--delay",   type=float, default=REQUEST_DELAY, help="Sekunden zwischen Steam-Requests")
     args = parser.parse_args()
 
-    global REQUEST_DELAY
     REQUEST_DELAY = args.delay
 
     if not args.gist_id or not args.pat:

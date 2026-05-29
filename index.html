@@ -621,10 +621,7 @@ function showSettings() {
     document.getElementById('settingProxyUrl').value = getProxyUrl();
     const panel = document.getElementById('settingsPanel');
     panel.classList.add('active');
-    // Bring settings above the config prompt overlay
-    panel.style.position = 'relative';
-    panel.style.zIndex   = '600';
-    document.getElementById('configPrompt').classList.remove('active');
+    document.getElementById('configPrompt').style.display = 'none';
 }
 
 function toggleSettings() {
@@ -653,7 +650,7 @@ async function saveSettings() {
     await syncFromGist();
     // If still not loaded after sync attempt, show config prompt again
     if (games.length === 0) {
-        document.getElementById('configPrompt').classList.add('active');
+        document.getElementById('configPrompt').style.display = 'flex';
     }
 }
 
@@ -697,7 +694,7 @@ async function syncFromGist() {
         if (data.weekends)   { weekendGames = data.weekends;   localStorage.setItem(STORAGE_KEY_WEEKENDS, JSON.stringify(weekendGames)); }
 
         // Hide config prompt, re-render
-        document.getElementById('configPrompt').classList.remove('active');
+        document.getElementById('configPrompt').style.display = 'none';
         renderAll();
         setSyncStatus('synced', data.lastModified, data.lastModifiedBy);
     } catch (e) {
@@ -706,7 +703,7 @@ async function syncFromGist() {
         // If local data available, use it
         loadFromLocalStorage();
         if (games.length > 0) {
-            document.getElementById('configPrompt').classList.remove('active');
+            document.getElementById('configPrompt').style.display = 'none';
             renderAll();
         }
     }
@@ -772,14 +769,14 @@ function saveWeekends(){ localStorage.setItem(STORAGE_KEY_WEEKENDS, JSON.stringi
 function init() {
     if (!isConfigured()) {
         // Show config prompt — nothing else loaded
-        document.getElementById('configPrompt').classList.add('active');
+        document.getElementById('configPrompt').style.display = 'flex';
         renderAll(); // renders empty tables
         return;
     }
     // Load local cache immediately for instant display
     loadFromLocalStorage();
     if (games.length > 0) {
-        document.getElementById('configPrompt').classList.remove('active');
+        document.getElementById('configPrompt').style.display = 'none';
         renderAll();
     }
     // Then fetch fresh data from Gist

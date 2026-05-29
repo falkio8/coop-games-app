@@ -4,26 +4,28 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Coop Games Tracker</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎮</text></svg>">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><path d='M50 5 L90 20 L90 55 Q90 80 50 97 Q10 80 10 55 L10 20 Z' fill='%232e5f8a' stroke='%23c8d4e0' stroke-width='3'/><polygon points='50,28 54,40 67,40 57,48 61,60 50,52 39,60 43,48 33,40 46,40' fill='%23dce6ef'/></svg>">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 <style>
 :root {
-    --bg: #f4f6f9;
+    --bg: #d8e6f0;
     --bg-card: #ffffff;
-    --bg-hover: #f0f4ff;
-    --primary: #001e50;
-    --primary-light: #00437a;
-    --accent: #0066cc;
-    --text: #1a1a1a;
-    --text-dim: #6c757d;
-    --green: #198754;
-    --yellow: #ffc107;
-    --orange: #e65100;
-    --red: #dc3545;
-    --blue: #0d6efd;
-    --border: #dee2e6;
+    --bg-hover: #c6d8eb;
+    --primary: #1a4268;
+    --primary-light: #2a6aab;
+    --accent: #c89a18;
+    --accent-hover: #a67e10;
+    --text: #0f1d2e;
+    --text-dim: #4a6070;
+    --green: #1a6030;
+    --yellow: #8a5c08;
+    --orange: #b04400;
+    --red: #a01828;
+    --blue: #1a5490;
+    --border: #9ab4c8;
+    --silver: #bcd0e0;
     --radius: 6px;
-    --shadow: 0 1px 3px rgba(0,0,0,0.08);
+    --shadow: 0 1px 4px rgba(26,66,104,0.20);
 }
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body {
@@ -66,7 +68,7 @@ a:hover { text-decoration: underline; }
 }
 .btn:hover { background: rgba(255,255,255,0.2); }
 .btn-primary { background: var(--accent); border-color: var(--accent); }
-.btn-primary:hover { background: #0052a3; }
+.btn-primary:hover { background: var(--accent-hover); }
 .btn-sm {
     padding: 0.2rem 0.45rem;
     font-size: 0.75rem;
@@ -195,15 +197,15 @@ a:hover { text-decoration: underline; }
     font-weight: 500;
     letter-spacing: 0.2px;
 }
-.badge-released { background: #d4edda; color: #155724; }
-.badge-ea { background: #fff3cd; color: #856404; }
-.badge-unreleased { background: #e2e3e5; color: #383d41; }
-.badge-notfound { background: #f5f5f5; color: #999; }
-.badge-played { background: #d4edda; color: #155724; }
-.badge-abandoned { background: #f8d7da; color: #721c24; }
-.badge-obsolete { background: #e2e3e5; color: #383d41; }
-.badge-wait-ea { background: #fff3cd; color: #856404; }
-.badge-candidate { background: #cce5ff; color: #004085; }
+.badge-released { background: #b8ddc0; color: #0f4020; }
+.badge-ea { background: #f5dfa0; color: #5a3c00; }
+.badge-unreleased { background: #b8cede; color: #253a50; }
+.badge-notfound { background: #ccd8e0; color: #3a4e5a; }
+.badge-played { background: #b8ddc0; color: #0f4020; }
+.badge-abandoned { background: #f0b8be; color: #5a0c14; }
+.badge-obsolete { background: #b8cede; color: #253a50; }
+.badge-wait-ea { background: #f5dfa0; color: #5a3c00; }
+.badge-candidate { background: #a8c8e8; color: #0a2848; }
 
 .review-bar { display: flex; align-items: center; gap: 0.4rem; }
 .review-bar-inner {
@@ -517,9 +519,6 @@ a:hover { text-decoration: underline; }
 <!-- Weekly View -->
 <div id="view-weekly" style="display:none">
 <div class="stats" id="stats-weekly"></div>
-<div class="filter-bar">
-    <input type="text" id="searchWeekly" placeholder="Suche..." oninput="renderWeekly()">
-</div>
 <div class="main">
     <div class="table-card">
     <table class="game-table" id="weeklyTable">
@@ -532,6 +531,21 @@ a:hover { text-decoration: underline; }
                 <th>Bemerkung</th>
                 <th>Aktionen</th>
             </tr>
+            <tr class="filter-row">
+                <th></th>
+                <th><input type="text" id="searchWeekly" placeholder="Suche..." oninput="renderWeekly()"></th>
+                <th></th>
+                <th>
+                    <select id="filterWeeklyRating" onchange="renderWeekly()">
+                        <option value="">Alle</option>
+                        <option value="top">Top</option>
+                        <option value="ok">OK</option>
+                        <option value="flop">Flop</option>
+                    </select>
+                </th>
+                <th></th>
+                <th></th>
+            </tr>
         </thead>
         <tbody id="weeklyTableBody"></tbody>
     </table>
@@ -542,9 +556,6 @@ a:hover { text-decoration: underline; }
 <!-- Weekends View -->
 <div id="view-weekends" style="display:none">
 <div class="stats" id="stats-weekends"></div>
-<div class="filter-bar">
-    <input type="text" id="searchWeekends" placeholder="Suche..." oninput="renderWeekends()">
-</div>
 <div class="main">
     <div class="table-card">
     <table class="game-table" id="weekendsTable">
@@ -555,6 +566,13 @@ a:hover { text-decoration: underline; }
                 <th onclick="sortWeekendsBy('location')">Ort <span class="sort-arrow"></span></th>
                 <th>Sonderaktion</th>
                 <th>Aktionen</th>
+            </tr>
+            <tr class="filter-row">
+                <th></th>
+                <th><input type="text" id="searchWeekends" placeholder="Suche..." oninput="renderWeekends()"></th>
+                <th><select id="filterWeekendsLocation" onchange="renderWeekends()"><option value="">Alle</option></select></th>
+                <th></th>
+                <th></th>
             </tr>
         </thead>
         <tbody id="weekendsTableBody"></tbody>
@@ -1313,9 +1331,17 @@ function renderWeeklyStats() {
 
 function renderWeekly() {
     const search = document.getElementById('searchWeekly').value.toLowerCase();
-    let filtered = weeklyGames.filter(g =>
-        !search || g.title.toLowerCase().includes(search) || (g.notes||'').toLowerCase().includes(search)
-    );
+    const ratingFilter = document.getElementById('filterWeeklyRating').value;
+    let filtered = weeklyGames.filter(g => {
+        if (search && !g.title.toLowerCase().includes(search) && !(g.notes||'').toLowerCase().includes(search)) return false;
+        if (ratingFilter) {
+            const n = (g.notes||'').toLowerCase();
+            if (ratingFilter === 'top' && !(n.includes('mega') || n.includes('krass') || n.includes('super') || n.includes('game of the year'))) return false;
+            if (ratingFilter === 'flop' && !(n.includes('war nix') || n.includes('mies') || n.includes('abgebrochen') || n.includes('langweilig'))) return false;
+            if (ratingFilter === 'ok' && !(n.includes('ganz okay') || n.includes('ganz nett') || n.includes('ging so') || n.includes('nett'))) return false;
+        }
+        return true;
+    });
     const dir = weeklySortDir === 'asc' ? 1 : -1;
     filtered.sort((a, b) => {
         if (weeklySortCol === 'hours') return dir * ((a.hours||0) - (b.hours||0));
@@ -1393,9 +1419,18 @@ function renderWeekendsStats() {
 
 function renderWeekends() {
     const search = document.getElementById('searchWeekends').value.toLowerCase();
-    let filtered = weekendGames.filter(g =>
-        !search || g.title.toLowerCase().includes(search) || (g.special||'').toLowerCase().includes(search)
-    );
+    const locFilter = document.getElementById('filterWeekendsLocation').value;
+    // populate location dropdown if needed
+    const locSelect = document.getElementById('filterWeekendsLocation');
+    const locations = [...new Set(weekendGames.map(g => g.location).filter(Boolean))].sort();
+    if (locSelect.options.length !== locations.length + 1) {
+        locSelect.innerHTML = '<option value="">Alle</option>' + locations.map(l => `<option value="${escHtml(l)}"${l===locFilter?' selected':''}>${escHtml(l)}</option>`).join('');
+    }
+    let filtered = weekendGames.filter(g => {
+        if (search && !g.title.toLowerCase().includes(search) && !(g.special||'').toLowerCase().includes(search)) return false;
+        if (locFilter && g.location !== locFilter) return false;
+        return true;
+    });
     const dir = weekendsSortDir === 'asc' ? 1 : -1;
     filtered.sort((a, b) => {
         if (weekendsSortCol === 'title')    return dir * a.title.localeCompare(b.title);

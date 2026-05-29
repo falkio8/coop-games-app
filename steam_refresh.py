@@ -208,6 +208,10 @@ def main():
         print("Dry-run: Gist wird nicht aktualisiert.")
         return
 
+    # --- Metadaten aktualisieren ---
+    data["lastModified"]   = timestamp
+    data["lastModifiedBy"] = "steam_refresh"
+
     # --- Gist aktualisieren ---
     print("Schreibe Gist...")
     gist_patch(args.gist_id, args.pat, json.dumps(data, ensure_ascii=False, indent=2))

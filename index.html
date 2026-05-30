@@ -363,26 +363,8 @@ a:hover { text-decoration: underline; }
     .header h1 { font-size: 1rem; }
 }
 
-@media (max-width: 540px) {
-    /* Header: tighter */
-    .header { padding: 0.6rem 0.75rem; gap: 0.3rem; }
-    .header h1 { font-size: 0.95rem; }
-    .header-actions { gap: 0.25rem; }
-    .btn { padding: 0.3rem 0.5rem; font-size: 0.75rem; }
-    /* hide Export and Import button text, keep icon — by hiding text nodes via span trick */
-    #btnExportLabel, #btnImportLabel { display: none; }
-    /* Stats: smaller */
-    .stats { gap: 0.5rem; padding: 0.5rem 0.75rem; }
-    .stat { padding: 0.5rem 0.75rem; min-width: 60px; }
-    .stat-value { font-size: 1rem; }
-    /* Tabs: scroll horizontally */
-    .tabs { overflow-x: auto; flex-wrap: nowrap; padding-bottom: 2px; }
-    /* Main padding */
-    .main { padding: 0.6rem 0.5rem; }
-    /* Action buttons: no wrap */
-    .game-table td:last-child { white-space: nowrap; }
-    .btn-sm { padding: 0.2rem 0.35rem; }
-
+/* Portrait mobile: column hiding + touch targets */
+@media (max-width: 540px) and (orientation: portrait) {
     /* Watchlist: keep Spiel, User Status, Aktionen — hide rest */
     #gameTableBody tr td:nth-child(2),
     #gameTableBody tr td:nth-child(3),
@@ -403,14 +385,11 @@ a:hover { text-decoration: underline; }
     .game-table:has(#gameTableBody) thead tr.filter-row th:nth-child(7),
     .game-table:has(#gameTableBody) thead tr.filter-row th:nth-child(8) { display: none; }
 
-    /* Weekly: keep Titel, Fazit, Aktionen — hide Datum, Stunden, Bemerkung */
-    #weeklyTableBody tr td:nth-child(1),
+    /* Weekly: keep Datum, Titel, Fazit, Aktionen — hide Stunden, Bemerkung */
     #weeklyTableBody tr td:nth-child(3),
     #weeklyTableBody tr td:nth-child(5) { display: none; }
-    .game-table:has(#weeklyTableBody) thead tr:first-child th:nth-child(1),
     .game-table:has(#weeklyTableBody) thead tr:first-child th:nth-child(3),
     .game-table:has(#weeklyTableBody) thead tr:first-child th:nth-child(5) { display: none; }
-    .game-table:has(#weeklyTableBody) thead tr.filter-row th:nth-child(1),
     .game-table:has(#weeklyTableBody) thead tr.filter-row th:nth-child(3),
     .game-table:has(#weeklyTableBody) thead tr.filter-row th:nth-child(5) { display: none; }
 
@@ -421,6 +400,39 @@ a:hover { text-decoration: underline; }
     .game-table:has(#weekendsTableBody) thead tr:first-child th:nth-child(4) { display: none; }
     .game-table:has(#weekendsTableBody) thead tr.filter-row th:nth-child(3),
     .game-table:has(#weekendsTableBody) thead tr.filter-row th:nth-child(4) { display: none; }
+}
+
+/* All mobile (portrait + landscape): touch targets, layout, hide export/import */
+@media (max-width: 540px) {
+    /* Header */
+    .header { padding: 0.6rem 0.75rem; gap: 0.3rem; }
+    .header h1 { font-size: 0.95rem; }
+    .header-actions { gap: 0.25rem; }
+    /* Hide Export and Import on mobile */
+    #btnExport, #btnImport { display: none; }
+    /* Header buttons: min 44px touch target */
+    .header .btn { min-height: 44px; min-width: 44px; padding: 0 0.6rem; font-size: 0.8rem; justify-content: center; }
+    /* Stats */
+    .stats { gap: 0.5rem; padding: 0.5rem 0.75rem; }
+    .stat { padding: 0.5rem 0.75rem; min-width: 60px; }
+    .stat-value { font-size: 1rem; }
+    /* Tabs: scroll horizontally */
+    .tabs { overflow-x: auto; flex-wrap: nowrap; padding-bottom: 2px; }
+    /* Main padding */
+    .main { padding: 0.6rem 0.5rem; }
+    /* Table: horizontal scroll in landscape */
+    .table-card { overflow-x: auto; }
+    /* Action buttons: 44px touch targets, no wrap */
+    .game-table td:last-child { white-space: nowrap; }
+    .btn-sm {
+        min-width: 44px;
+        min-height: 44px;
+        padding: 0;
+        font-size: 1rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
 }
 
 .topnav {
@@ -464,8 +476,8 @@ a:hover { text-decoration: underline; }
         <span id="headerSyncStatus" style="font-size:0.72rem;color:rgba(255,255,255,0.55);align-self:center;margin-right:0.25rem"></span>
         <button class="btn btn-primary" onclick="openAddModal()"><i class="bi bi-plus-circle"></i> Hinzufügen</button>
         <button class="btn" onclick="toggleSettings()"><i class="bi bi-gear"></i></button>
-        <button class="btn" onclick="exportData()"><i class="bi bi-download"></i><span id="btnExportLabel"> Export</span></button>
-        <button class="btn" onclick="document.getElementById('importFile').click()"><i class="bi bi-upload"></i><span id="btnImportLabel"> Import</span></button>
+        <button class="btn" id="btnExport" onclick="exportData()"><i class="bi bi-download"></i> Export</button>
+        <button class="btn" id="btnImport" onclick="document.getElementById('importFile').click()"><i class="bi bi-upload"></i> Import</button>
         <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
     </div>
 </div>
@@ -1267,7 +1279,6 @@ function switchView(view) {
     document.getElementById('view-watchlist').style.display = view === 'watchlist' ? '' : 'none';
     document.getElementById('view-weekly').style.display    = view === 'weekly'    ? '' : 'none';
     document.getElementById('view-weekends').style.display  = view === 'weekends'  ? '' : 'none';
-    document.getElementById('btnSteamRefresh').style.display = view === 'watchlist' ? '' : 'none';
     if (view === 'weekly')   { renderWeekly(); renderWeeklyStats(); }
     if (view === 'weekends') { renderWeekends(); renderWeekendsStats(); }
 }

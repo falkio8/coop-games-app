@@ -48,6 +48,21 @@ Everything is in `index.html` — no build step, no framework, no bundler. Vanil
 
 **CSS variables** are defined in `:root` — color scheme derived from a heraldic coat of arms (shield blue `#1a4268`, gold `#c89a18`, silver `#bcd0e0`). Responsive breakpoints at `768px` and `540px`.
 
+## Workflow
+
+**Development process — always in this order:**
+1. **Plan** — outline the approach and discuss with the user
+2. **Approval** — wait for explicit sign-off before writing any code
+3. **Implement** — make changes on a feature branch
+4. **Test** — verify locally before committing
+5. **Commit / PR** — only after the user has reviewed and approved
+
+**GitHub Flow:**
+- One branch per issue, named `issue-<N>-short-description`
+- Reference the issue in commits: `Fix #3: remove Steam Refresh button`
+- Open a PR per branch, link the issue in the PR body (`Closes #N`)
+- No direct commits to `main` — merge only via reviewed PR
+
 ## Coding conventions
 
 - **Language:** All code, comments, documentation, and GitHub issues must be in **English**
@@ -74,6 +89,5 @@ Updates `steam_status`, `price`, `review_pct`, `review_count`, `steam_updated`, 
 |---|---|
 | [#1](https://github.com/uceumern/coop-games-app/issues/1) | i18n: English/German via browser language |
 | [#2](https://github.com/uceumern/coop-games-app/issues/2) | Dark mode via `prefers-color-scheme` |
-| [#3](https://github.com/uceumern/coop-games-app/issues/3) | Remove non-functional Steam Refresh button from UI |
 | [#4](https://github.com/uceumern/coop-games-app/issues/4) | Mobile: larger touch targets for action buttons |
 | [#5](https://github.com/uceumern/coop-games-app/issues/5) | Platform field per game (Steam, Xbox Game Pass, etc.) |

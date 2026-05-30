@@ -463,7 +463,6 @@ a:hover { text-decoration: underline; }
     <div class="header-actions">
         <span id="headerSyncStatus" style="font-size:0.72rem;color:rgba(255,255,255,0.55);align-self:center;margin-right:0.25rem"></span>
         <button class="btn btn-primary" onclick="openAddModal()"><i class="bi bi-plus-circle"></i> Hinzufügen</button>
-        <button class="btn" id="btnSteamRefresh" onclick="refreshAllSteamData()"><i class="bi bi-arrow-clockwise"></i> Steam Refresh</button>
         <button class="btn" onclick="toggleSettings()"><i class="bi bi-gear"></i></button>
         <button class="btn" onclick="exportData()"><i class="bi bi-download"></i><span id="btnExportLabel"> Export</span></button>
         <button class="btn" onclick="document.getElementById('importFile').click()"><i class="bi bi-upload"></i><span id="btnImportLabel"> Import</span></button>
@@ -492,11 +491,7 @@ a:hover { text-decoration: underline; }
         <label>Benutzername (für Änderungs-Tracking)</label>
         <input type="text" id="settingUserName" placeholder="z.B. Ulf, Falk">
     </div>
-    <div class="settings-row">
-        <label>Steam API Proxy URL (optional, für Live-Daten)</label>
-        <input type="text" id="settingProxyUrl" placeholder="z.B. https://example.com/steam-proxy">
-        <small>Ohne Proxy können Steam-Daten nicht aktualisiert werden, die App funktioniert aber offline.</small>
-    </div>
+
     <div style="margin-top:0.8rem; display:flex; gap:0.5rem; align-items:center;">
         <button class="btn btn-primary" style="color:#fff" onclick="saveSettings()"><i class="bi bi-check"></i> Speichern & verbinden</button>
         <span id="syncStatus" style="font-size:0.78rem"></span>
@@ -697,7 +692,6 @@ const STORAGE_KEY_WEEKENDS = 'coop_tracker_weekends';
 const PAT_KEY            = 'coop_tracker_pat';
 const GIST_ID_KEY        = 'coop_tracker_gist_id';
 const USER_NAME_KEY      = 'coop_tracker_username';
-const PROXY_KEY          = 'coop_tracker_proxy_url';
 const GIST_FILE          = 'coop_games_data.json';
 
 const CATEGORIES = {
@@ -744,14 +738,13 @@ let weekendsSortDir    = 'desc';
 function getPat()      { return localStorage.getItem(PAT_KEY) || ''; }
 function getGistId()   { return localStorage.getItem(GIST_ID_KEY) || ''; }
 function getUserName() { return localStorage.getItem(USER_NAME_KEY) || 'anonymous'; }
-function getProxyUrl() { return localStorage.getItem(PROXY_KEY) || ''; }
+
 function isConfigured() { return !!(getPat() && getGistId()); }
 
 function showSettings() {
     document.getElementById('settingPat').value      = getPat();
     document.getElementById('settingGistId').value   = getGistId();
     document.getElementById('settingUserName').value = getUserName();
-    document.getElementById('settingProxyUrl').value = getProxyUrl();
     const panel = document.getElementById('settingsPanel');
     panel.classList.add('active');
     document.getElementById('configPrompt').style.display = 'none';
@@ -770,14 +763,12 @@ async function saveSettings() {
     const pat      = document.getElementById('settingPat').value.trim();
     const gistId   = document.getElementById('settingGistId').value.trim();
     const userName = document.getElementById('settingUserName').value.trim();
-    const proxyUrl = document.getElementById('settingProxyUrl').value.trim();
 
     if (!pat || !gistId) { toast('PAT und Gist-ID sind Pflichtfelder'); return; }
 
     localStorage.setItem(PAT_KEY, pat);
     localStorage.setItem(GIST_ID_KEY, gistId);
     if (userName) localStorage.setItem(USER_NAME_KEY, userName);
-    if (proxyUrl) localStorage.setItem(PROXY_KEY, proxyUrl);
 
     setSyncStatus('loading', 'Verbinde...');
     await syncFromGist();
@@ -927,91 +918,6 @@ function init() {
     syncFromGist();
 }
 
-// ==================== STEAM API ====================
-async function fetchSteamSearch(term) {
-    const proxy = getProxyUrl();
-    if (!proxy) throw new Error('Kein Proxy konfiguriert');
-    const resp = await fetch(`${proxy}?action=search&term=${encodeURIComponent(term)}`);
-    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-    return resp.json();
-}
-
-async function fetchSteamDetails(appid) {
-    const proxy = getProxyUrl();
-    if (!proxy) throw new Error('Kein Proxy konfiguriert');
-    const resp = await fetch(`${proxy}?action=details&appid=${appid}`);
-    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-    return resp.json();
-}
-
-async function fetchSteamReviews(appid) {
-    const proxy = getProxyUrl();
-    if (!proxy) throw new Error('Kein Proxy konfiguriert');
-    const resp = await fetch(`${proxy}?action=reviews&appid=${appid}`);
-    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-    return resp.json();
-}
-
-async function refreshSingleGame(game) {
-    if (!game.appid) {
-        const searchData = await fetchSteamSearch(game.name);
-        const items = searchData?.items || [];
-        if (items.length > 0) game.appid = items[0].id;
-        else return;
-    }
-    const detailsData = await fetchSteamDetails(game.appid);
-    const entry = detailsData?.[String(game.appid)];
-    if (entry?.success && entry.data) {
-        const d = entry.data;
-        const genres = d.genres || [];
-        const isEa = genres.some(g => g.description === 'Early Access');
-        const isReleased = !d.release_date?.coming_soon;
-        let price = '';
-        if (d.price_overview) price = d.price_overview.final_formatted || '';
-        else if (d.is_free) price = 'Free to Play';
-        let steamStatus = 'unknown';
-        if (!isReleased) steamStatus = 'unreleased';
-        else if (isEa) steamStatus = 'ea';
-        else steamStatus = 'released';
-        game.steam = game.steam || {};
-        Object.assign(game.steam, { price, steam_status: steamStatus, is_ea: isEa, release_date: d.release_date?.date || '' });
-    }
-    const reviewsData = await fetchSteamReviews(game.appid);
-    if (reviewsData?.success === 1 && reviewsData.query_summary) {
-        const qs = reviewsData.query_summary;
-        const total = (qs.total_positive || 0) + (qs.total_negative || 0);
-        game.steam = game.steam || {};
-        game.steam.review_count = total;
-        game.steam.review_pct = total > 0 ? Math.round(qs.total_positive / total * 100) : null;
-    }
-    game.steam.last_updated = new Date().toISOString();
-}
-
-async function refreshAllSteamData() {
-    if (!getProxyUrl()) { toast('Bitte erst Steam Proxy URL in den Einstellungen eintragen'); return; }
-    const candidates = games.filter(g => g.status !== 'obsolete');
-    toast(`Aktualisiere ${candidates.length} Spiele...`);
-    let updated = 0;
-    for (const game of candidates) {
-        try { await refreshSingleGame(game); updated++; }
-        catch (e) { console.warn(`Fehler bei ${game.name}:`, e); }
-        await new Promise(r => setTimeout(r, 1200));
-    }
-    saveGames(); renderGames(); renderStats();
-    toast(`${updated}/${candidates.length} Spiele aktualisiert`);
-}
-
-async function refreshOneGame(id) {
-    if (!getProxyUrl()) { toast('Bitte erst Steam Proxy URL in den Einstellungen eintragen'); return; }
-    const game = games.find(g => g.id === id);
-    if (!game) return;
-    toast(`Aktualisiere ${game.name}...`);
-    try {
-        await refreshSingleGame(game);
-        saveGames(); renderGames();
-        toast(`${game.name} aktualisiert`);
-    } catch(e) { toast(`Fehler: ${e.message}`); }
-}
 
 // ==================== UI ====================
 function renderAll() {
@@ -1119,7 +1025,6 @@ function renderGames() {
             <td class="col-added" style="font-size:0.78rem;color:var(--text-dim)">${addedHtml}</td>
             <td>
                 <button class="btn btn-sm" onclick="openEditModal('${game.id}')" title="Bearbeiten"><i class="bi bi-pencil"></i></button>
-                <button class="btn btn-sm" onclick="refreshOneGame('${game.id}')" title="Steam aktualisieren"><i class="bi bi-arrow-clockwise"></i></button>
                 <button class="btn btn-sm" onclick="deleteGame('${game.id}')" title="Löschen"><i class="bi bi-trash3"></i></button>
             </td>
         </tr>`;

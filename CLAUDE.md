@@ -58,6 +58,7 @@ Everything is in `index.html` — no build step, no framework, no bundler. Vanil
 5. **Commit / PR** — only after the user has reviewed and approved
 
 **GitHub Flow:**
+- Before starting any issue: `git checkout main && git pull`
 - One branch per issue, named `issue-<N>-short-description`
 - Reference the issue in commits: `Fix #3: remove Steam Refresh button`
 - Open a PR per branch, link the issue in the PR body (`Closes #N`)

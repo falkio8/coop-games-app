@@ -28,7 +28,7 @@ Everything is in `index.html` — no build step, no framework, no bundler. Vanil
 ```json
 {
   "watchlist": [{ "id", "name", "appid", "category", "status", "xgp", "platform", "notes", "added", "steam": { "steam_status", "price", "review_pct", "review_count", "steam_updated" } }],
-  "weekly":    [{ "id", "date", "title", "hours", "notes" }],
+  "weekly":    [{ "id", "date", "title", "hours", "rating", "notes" }],
   "weekends":  [{ "id", "date", "dateLabel", "title", "location", "special" }],
   "lastModified": "<ISO timestamp>",
   "lastModifiedBy": "<username>"
@@ -53,7 +53,7 @@ Everything is in `index.html` — no build step, no framework, no bundler. Vanil
 The app version is stored as a JS constant at the top of the `<script>` block in `index.html`:
 
 ```js
-const APP_VERSION = '1.2.0';
+const APP_VERSION = '1.3.0';
 ```
 
 And displayed in the settings panel. **SemVer rules:**
@@ -100,12 +100,3 @@ python steam_refresh.py --gist-id <GIST_ID> --pat <GITHUB_PAT> [--dry-run]
 ```
 
 Updates `steam_status`, `price`, `review_pct`, `review_count`, `steam_updated`, `lastModified` in the Gist.
-
-## Open issues
-
-| # | Topic |
-|---|---|
-| [#1](https://github.com/uceumern/coop-games-app/issues/1) | i18n: English/German via browser language |
-| [#2](https://github.com/uceumern/coop-games-app/issues/2) | Dark mode via `prefers-color-scheme` |
-| [#4](https://github.com/uceumern/coop-games-app/issues/4) | Mobile: larger touch targets for action buttons |
-| [#5](https://github.com/uceumern/coop-games-app/issues/5) | Platform field per game (Steam, Xbox Game Pass, etc.) |
